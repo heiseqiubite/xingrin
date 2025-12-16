@@ -150,8 +150,8 @@ sudo ./uninstall.sh
 sudo ./update.sh
 ```
 ## 日志
-项目日志：/opt/xingrin/logs 下存储了这个项目的运行日志信息，error文件存储了错误相关信息，xingrin.log存储了包括错误在内的所有项目日志
-工具调用日志：/opt/xingrin/results 下存储了工具的运行结果日志，比如naabu，httpx等的结果调用日志
+- 项目日志：/opt/xingrin/logs 下存储了这个项目的运行日志信息，error文件存储了错误相关信息，xingrin.log存储了包括错误在内的所有项目日志
+- 工具调用日志：/opt/xingrin/results 下存储了工具的运行结果日志，比如naabu，httpx等的结果调用日志
 
 ## 🤝 反馈与贡献
 
