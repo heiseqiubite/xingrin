@@ -9,7 +9,7 @@ import { useSystemLogs } from "@/hooks/use-system-logs"
 
 export function SystemLogsView() {
   const { theme } = useTheme()
-  const { data } = useSystemLogs({ lines: 2000 })
+  const { data } = useSystemLogs({ lines: 200 })
 
   const content = useMemo(() => data?.content ?? "", [data?.content])
 

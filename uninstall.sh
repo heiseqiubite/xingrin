@@ -95,16 +95,17 @@ fi
 # ==============================================================================
 # 2. 删除扫描日志和结果目录
 # ==============================================================================
-LOGS_DIR="$ROOT_DIR/backend/logs"
-RESULTS_DIR="$ROOT_DIR/backend/results"
 
-step "[2/6] 是否删除扫描日志和结果目录 ($LOGS_DIR, $RESULTS_DIR)？(Y/n)"
+OPT_LOGS_DIR="/opt/xingrin/logs"
+OPT_RESULTS_DIR="/opt/xingrin/results"
+
+step "[2/6] 是否删除扫描日志和结果目录 ($OPT_LOGS_DIR, $OPT_RESULTS_DIR)？(Y/n)"
 read -r ans_logs
 ans_logs=${ans_logs:-Y}
 
 if [[ $ans_logs =~ ^[Yy]$ ]]; then
     info "正在删除日志和结果目录..."
-    rm -rf "$LOGS_DIR" "$RESULTS_DIR"
+    rm -rf "$OPT_LOGS_DIR" "$OPT_RESULTS_DIR"
     success "已删除日志和结果目录。"
 else
     warn "已保留日志和结果目录。"

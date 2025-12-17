@@ -85,38 +85,68 @@ export BUILDKIT_INLINE_CACHE=1
 # 使用指定的 compose 文件
 COMPOSE_ARGS="-f ${COMPOSE_FILE} ${PROFILE_ARG}"
 
+SERVICES="$(${COMPOSE_CMD} ${COMPOSE_ARGS} config --services)"
+service_exists() {
+    echo "$SERVICES" | grep -qx "$1"
+}
+
+BACKEND_SERVICES=()
+for s in redis server agent; do
+    if service_exists "$s"; then
+        BACKEND_SERVICES+=("$s")
+    fi
+done
+
+# 如果使用本地数据库，先启动 postgres 并等待健康
+start_postgres_first() {
+    if [ -n "$PROFILE_ARG" ]; then
+        echo -e "${CYAN}[DB]${NC} 启动 PostgreSQL 容器..."
+        ${COMPOSE_CMD} ${COMPOSE_ARGS} up -d postgres
+        echo -e "${CYAN}[DB]${NC} 等待 PostgreSQL 就绪..."
+        local max_wait=30
+        local count=0
+        while [ $count -lt $max_wait ]; do
+            if ${COMPOSE_CMD} ${COMPOSE_ARGS} exec -T postgres pg_isready -U postgres >/dev/null 2>&1; then
+                echo -e "${GREEN}[DB]${NC} PostgreSQL 已就绪"
+                return 0
+            fi
+            sleep 1
+            count=$((count + 1))
+        done
+        echo -e "${YELLOW}[WARN]${NC} PostgreSQL 等待超时，继续启动其他服务..."
+    fi
+}
+
 echo ""
 if [ "$DEV_MODE" = true ]; then
     # 开发模式：本地构建
     if [ "$WITH_FRONTEND" = true ]; then
         echo -e "${CYAN}[BUILD]${NC} 并行构建镜像..."
         ${COMPOSE_CMD} ${COMPOSE_ARGS} build --parallel
+        start_postgres_first
         echo -e "${CYAN}[START]${NC} 启动全部服务..."
         ${COMPOSE_CMD} ${COMPOSE_ARGS} up -d
     else
         echo -e "${CYAN}[BUILD]${NC} 并行构建后端镜像..."
-        ${COMPOSE_CMD} ${COMPOSE_ARGS} build --parallel server scan-worker maintenance-worker
+        ${COMPOSE_CMD} ${COMPOSE_ARGS} build --parallel "${BACKEND_SERVICES[@]}"
+        start_postgres_first
         echo -e "${CYAN}[START]${NC} 启动后端服务..."
-        ${COMPOSE_CMD} ${COMPOSE_ARGS} up -d redis server scan-worker maintenance-worker
-        if [ -n "$PROFILE_ARG" ]; then
-            ${COMPOSE_CMD} ${COMPOSE_ARGS} up -d postgres
-        fi
+        ${COMPOSE_CMD} ${COMPOSE_ARGS} up -d "${BACKEND_SERVICES[@]}"
     fi
 else
     # 生产模式：拉取 Docker Hub 镜像
     if [ "$WITH_FRONTEND" = true ]; then
         echo -e "${CYAN}[PULL]${NC} 拉取最新镜像..."
         ${COMPOSE_CMD} ${COMPOSE_ARGS} pull
+        start_postgres_first
         echo -e "${CYAN}[START]${NC} 启动全部服务..."
         ${COMPOSE_CMD} ${COMPOSE_ARGS} up -d
     else
         echo -e "${CYAN}[PULL]${NC} 拉取后端镜像..."
-        ${COMPOSE_CMD} ${COMPOSE_ARGS} pull redis server scan-worker maintenance-worker
+        ${COMPOSE_CMD} ${COMPOSE_ARGS} pull "${BACKEND_SERVICES[@]}"
+        start_postgres_first
         echo -e "${CYAN}[START]${NC} 启动后端服务..."
-        ${COMPOSE_CMD} ${COMPOSE_ARGS} up -d redis server scan-worker maintenance-worker
-        if [ -n "$PROFILE_ARG" ]; then
-            ${COMPOSE_CMD} ${COMPOSE_ARGS} up -d postgres
-        fi
+        ${COMPOSE_CMD} ${COMPOSE_ARGS} up -d "${BACKEND_SERVICES[@]}"
     fi
 fi
 echo -e "${GREEN}[OK]${NC} 服务已启动"
