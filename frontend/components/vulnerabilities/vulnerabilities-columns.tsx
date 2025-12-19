@@ -81,7 +81,7 @@ export function createVulnerabilityColumns({
     },
     {
       accessorKey: "vulnType",
-      header: "类型",
+      header: "Vuln Type",
       cell: ({ row }) => {
         const vulnType = row.getValue("vulnType") as string
         const vulnerability = row.original
@@ -143,7 +143,7 @@ export function createVulnerabilityColumns({
     },
     {
       accessorKey: "discoveredAt",
-      header: "发现时间",
+      header: "Discovered At",
       cell: ({ row }) => {
         const discoveredAt = row.getValue("discoveredAt") as string
         return (
