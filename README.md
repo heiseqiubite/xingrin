@@ -115,8 +115,8 @@ flowchart TB
         subgraph SCHEDULER["任务调度器 (Task Distributor)"]
             direction TB
             SUBMIT["接收扫描任务"]
-            SELECT["负载感知选择<br/>• 从 Redis 读取实时负载<br/>• CPU 权重 70% + 内存权重 30%<br/>• 排除高负载节点 (>85%)"]
-            DISPATCH["智能分发<br/>• 本地: docker run<br/>• 远程: SSH + docker run"]
+            SELECT["负载感知选择"]
+            DISPATCH["智能分发"]
             
             SUBMIT --> SELECT
             SELECT --> DISPATCH
@@ -137,16 +137,10 @@ flowchart TB
     DISPATCH -->|任务分发| W2
     DISPATCH -->|高负载跳过| W3
     
-    W1 -.心跳上报 每3秒.-> REDIS
-    W2 -.心跳上报 每3秒.-> REDIS
-    W3 -.心跳上报 每3秒.-> REDIS
+    W1 -.心跳上报.-> REDIS
+    W2 -.心跳上报.-> REDIS
+    W3 -.心跳上报.-> REDIS
 ```
-
-**负载感知调度算法：**
-1. **实时监控** - Worker 每 3 秒上报 CPU/内存/磁盘状态到 Redis (TTL 15秒)
-2. **智能选择** - 任务提交时从 Redis 读取所有在线节点负载，计算加权分数 (CPU×0.7 + MEM×0.3)
-3. **动态分发** - 自动选择负载最低的节点执行任务，高负载节点 (>85%) 自动跳过
-4. **降级策略** - 所有节点高负载时等待 60 秒后重试，避免系统过载
 
 ### 📊 可视化界面
 - **数据统计** - 资产/漏洞统计仪表盘
@@ -162,27 +156,12 @@ flowchart TB
 - **数据库**: PostgreSQL + Redis
 - **部署**: Docker + Nginx
 
-### 🔧 内置扫描工具
-
-| 类别 | 工具 |
-|------|------|
-| 子域名爆破 | puredns, massdns, dnsgen |
-| 被动发现 | subfinder, amass, assetfinder, Sublist3r |
-| 端口扫描 | naabu |
-| 站点发现 | httpx |
-| 目录扫描 | ffuf |
-| 爬虫 | katana |
-| 被动URL收集 | waymore, uro |
-| 漏洞扫描 | nuclei, dalfox |
-
----
-
 ## 📦 快速开始
 
 ### 环境要求
 
 - **操作系统**: Ubuntu 20.04+ / Debian 11+ （推荐）
-- **硬件**: 2核 4G 内存起步，10GB+ 磁盘空间
+- **硬件**: 2核 4G 内存起步，20GB+ 磁盘空间
 
 ### 一键安装
 
@@ -193,14 +172,11 @@ cd xingrin
 
 # 安装并启动（生产模式）
 sudo ./install.sh
-
-# 开发模式
-sudo ./install.sh --dev
 ```
 
 ### 访问服务
 
-- **Web 界面**: `https://localhost` 或 `http://localhost`
+- **Web 界面**: `https://localhost` 
 
 ### 常用命令
 
@@ -220,9 +196,6 @@ sudo ./uninstall.sh
 # 更新
 sudo ./update.sh
 ```
-## 日志
-- 项目日志：/opt/xingrin/logs 下存储了这个项目的运行日志信息，error文件存储了错误相关信息，xingrin.log存储了包括错误在内的所有项目日志
-- 工具调用日志：/opt/xingrin/results 下存储了工具的运行结果日志，比如naabu，httpx等的结果调用日志
 
 ## 🤝 反馈与贡献
 
