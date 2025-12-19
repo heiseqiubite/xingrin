@@ -30,8 +30,11 @@ def fetch_config_and_setup_django():
         print("[ERROR] 缺少 SERVER_URL 环境变量", file=sys.stderr)
         sys.exit(1)
     
-    config_url = f"{server_url}/api/workers/config/"
+    # 通过环境变量声明 Worker 身份（本地/远程）
+    is_local = os.environ.get("IS_LOCAL", "false").lower() == "true"
+    config_url = f"{server_url}/api/workers/config/?is_local={str(is_local).lower()}"
     print(f"[CONFIG] 正在从配置中心获取配置: {config_url}")
+    print(f"[CONFIG] IS_LOCAL={is_local}")
     try:
         resp = requests.get(config_url, timeout=10)
         resp.raise_for_status()

@@ -221,10 +221,13 @@ class TaskDistributor:
         host_results_dir = settings.HOST_RESULTS_DIR  # /opt/xingrin/results
         host_logs_dir = settings.HOST_LOGS_DIR  # /opt/xingrin/logs
         
-        # 环境变量：只需 SERVER_URL，其他配置容器启动时从配置中心获取
+        # 环境变量：SERVER_URL + IS_LOCAL，其他配置容器启动时从配置中心获取
+        # IS_LOCAL 用于 Worker 向配置中心声明身份，决定返回的数据库地址
         # Prefect 本地模式配置：禁用 API server 和事件系统
+        is_local_str = "true" if worker.is_local else "false"
         env_vars = [
             f"-e SERVER_URL={shlex.quote(server_url)}",
+            f"-e IS_LOCAL={is_local_str}",
             "-e PREFECT_API_URL=",  # 禁用 API server
             "-e PREFECT_LOGGING_EXTRA_LOGGERS=",  # 禁用 Prefect 的额外内部日志器
         ]
