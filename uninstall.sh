@@ -80,6 +80,9 @@ if [[ $ans_stop =~ ^[Yy]$ ]]; then
     # 先强制停止并删除可能占用网络的容器（xingrin-agent 等）
     docker rm -f xingrin-agent xingrin-watchdog 2>/dev/null || true
     
+    # 清理所有可能的 XingRin 相关容器
+    docker ps -a | grep -E "(xingrin|docker-)" | awk '{print $1}' | xargs -r docker rm -f 2>/dev/null || true
+    
     # 停止两种模式的容器（不带 -v，volume 在第 5 步单独处理）
     [ -f "docker-compose.yml" ] && ${COMPOSE_CMD} -f docker-compose.yml down 2>/dev/null || true
     [ -f "docker-compose.dev.yml" ] && ${COMPOSE_CMD} -f docker-compose.dev.yml down 2>/dev/null || true
