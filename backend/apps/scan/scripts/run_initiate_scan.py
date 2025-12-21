@@ -11,6 +11,109 @@ import os
 import traceback
 
 
+def diagnose_prefect_environment():
+    """诊断 Prefect 运行环境，输出详细信息用于排查问题"""
+    print("\n" + "="*60)
+    print("Prefect 环境诊断")
+    print("="*60)
+    
+    # 1. 检查 Prefect 相关环境变量
+    print("\n[诊断] Prefect 环境变量:")
+    prefect_vars = [
+        'PREFECT_HOME',
+        'PREFECT_API_URL',
+        'PREFECT_SERVER_EPHEMERAL_ENABLED',
+        'PREFECT_SERVER_EPHEMERAL_STARTUP_TIMEOUT_SECONDS',
+        'PREFECT_SERVER_DATABASE_CONNECTION_URL',
+        'PREFECT_LOGGING_LEVEL',
+        'PREFECT_DEBUG_MODE',
+    ]
+    for var in prefect_vars:
+        value = os.environ.get(var, 'NOT SET')
+        print(f"  {var}={value}")
+    
+    # 2. 检查 PREFECT_HOME 目录
+    prefect_home = os.environ.get('PREFECT_HOME', os.path.expanduser('~/.prefect'))
+    print(f"\n[诊断] PREFECT_HOME 目录: {prefect_home}")
+    if os.path.exists(prefect_home):
+        print(f"  ✓ 目录存在")
+        print(f"  可写: {os.access(prefect_home, os.W_OK)}")
+        try:
+            files = os.listdir(prefect_home)
+            print(f"  文件列表: {files[:10]}{'...' if len(files) > 10 else ''}")
+        except Exception as e:
+            print(f"  ✗ 无法列出文件: {e}")
+    else:
+        print(f"  目录不存在，尝试创建...")
+        try:
+            os.makedirs(prefect_home, exist_ok=True)
+            print(f"  ✓ 创建成功")
+        except Exception as e:
+            print(f"  ✗ 创建失败: {e}")
+    
+    # 3. 检查 uvicorn 是否可用
+    print(f"\n[诊断] uvicorn 可用性:")
+    import shutil
+    uvicorn_path = shutil.which('uvicorn')
+    if uvicorn_path:
+        print(f"  ✓ uvicorn 路径: {uvicorn_path}")
+    else:
+        print(f"  ✗ uvicorn 不在 PATH 中")
+        print(f"  PATH: {os.environ.get('PATH', 'NOT SET')}")
+    
+    # 4. 检查 Prefect 版本
+    print(f"\n[诊断] Prefect 版本:")
+    try:
+        import prefect
+        print(f"  ✓ prefect=={prefect.__version__}")
+    except Exception as e:
+        print(f"  ✗ 无法导入 prefect: {e}")
+    
+    # 5. 检查 SQLite 支持
+    print(f"\n[诊断] SQLite 支持:")
+    try:
+        import sqlite3
+        print(f"  ✓ sqlite3 版本: {sqlite3.sqlite_version}")
+        # 测试创建数据库
+        test_db = os.path.join(prefect_home, 'test.db')
+        conn = sqlite3.connect(test_db)
+        conn.execute('CREATE TABLE IF NOT EXISTS test (id INTEGER)')
+        conn.close()
+        os.remove(test_db)
+        print(f"  ✓ SQLite 读写测试通过")
+    except Exception as e:
+        print(f"  ✗ SQLite 测试失败: {e}")
+    
+    # 6. 检查端口绑定能力
+    print(f"\n[诊断] 端口绑定测试:")
+    try:
+        import socket
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind(('127.0.0.1', 0))
+        port = sock.getsockname()[1]
+        sock.close()
+        print(f"  ✓ 可以绑定 127.0.0.1 端口 (测试端口: {port})")
+    except Exception as e:
+        print(f"  ✗ 端口绑定失败: {e}")
+    
+    # 7. 检查内存情况
+    print(f"\n[诊断] 系统资源:")
+    try:
+        import psutil
+        mem = psutil.virtual_memory()
+        print(f"  内存总量: {mem.total / 1024 / 1024:.0f} MB")
+        print(f"  可用内存: {mem.available / 1024 / 1024:.0f} MB")
+        print(f"  内存使用率: {mem.percent}%")
+    except ImportError:
+        print(f"  psutil 未安装，跳过内存检查")
+    except Exception as e:
+        print(f"  ✗ 资源检查失败: {e}")
+    
+    print("\n" + "="*60)
+    print("诊断完成")
+    print("="*60 + "\n")
+
+
 def main():
     print("="*60)
     print("run_initiate_scan.py 启动")
@@ -48,6 +151,10 @@ def main():
     print(f"       scan_workspace_dir: {args.scan_workspace_dir}")
     print(f"       engine_name: {args.engine_name}")
     print(f"       scheduled_scan_name: {args.scheduled_scan_name}")
+    
+    # 2.5. 运行 Prefect 环境诊断（仅在 DEBUG 模式下）
+    if os.environ.get('PREFECT_DEBUG_MODE') == 'true':
+        diagnose_prefect_environment()
     
     # 3. 现在可以安全导入 Django 相关模块
     print("[3/4] 导入 initiate_scan_flow...")
