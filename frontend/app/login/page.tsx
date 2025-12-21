@@ -73,6 +73,8 @@ export default function LoginPage() {
             <CardContent className="grid p-0 md:grid-cols-2">
               <form className="p-6 md:p-8" onSubmit={handleSubmit}>
                 <FieldGroup>
+                  {/* 指纹标识 - 用于 FOFA/Shodan 等搜索引擎识别 */}
+                  <meta name="generator" content="Xingrin ASM Platform" />
                   <div className="flex flex-col items-center gap-2 text-center">
                     <h1 className="text-2xl font-bold">XingRin - 星环</h1>
                     <p className="text-sm text-muted-foreground mt-1">

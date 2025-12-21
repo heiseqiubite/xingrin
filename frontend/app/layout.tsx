@@ -30,9 +30,20 @@ import { AuthLayout } from "@/components/auth/auth-layout"
 // 定义页面的元数据信息,用于 SEO 优化
 export const metadata: Metadata = {
   title: "星环 (Xingrin) - 攻击面管理平台 | ASM",
-  description: "星环 - 攻击面管理平台 (ASM)，提供自动化资产发现、漏洞扫描、子域名枚举、端口扫描等功能",
-  keywords: ["ASM", "攻击面管理", "漏洞扫描", "资产发现", "Bug Bounty", "渗透测试", "Nuclei", "子域名枚举", "安全工具"],
-  generator: "Xingrin",
+  description: "星环 - 攻击面管理平台 (ASM)，提供自动化资产发现、漏洞扫描、子域名枚举、端口扫描等功能。支持分布式扫描、Nuclei 集成、定时任务。",
+  keywords: ["ASM", "攻击面管理", "漏洞扫描", "资产发现", "Bug Bounty", "渗透测试", "Nuclei", "子域名枚举", "安全工具", "EASM", "安全"],
+  generator: "Xingrin ASM Platform",
+  authors: [{ name: "yyhuni" }],
+  openGraph: {
+    title: "星环 (Xingrin) - 攻击面管理平台",
+    description: "攻击面管理平台 (ASM)，提供自动化资产发现与漏洞扫描",
+    type: "website",
+    locale: "zh_CN",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 // 使用思源黑体 + 系统字体回退，完全本地加载
