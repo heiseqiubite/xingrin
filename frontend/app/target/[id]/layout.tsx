@@ -139,7 +139,7 @@ export default function TargetLayout({
             <TabsTrigger value="subdomain" asChild>
               <Link href={tabPaths.subdomain} className="flex items-center gap-0.5">
                 Subdomains
-                <Badge className="text-xs bg-chart-5 text-white border-0">
+                <Badge className="text-xs bg-primary text-primary-foreground border-0">
                   {counts.subdomain}
                 </Badge>
               </Link>
@@ -147,7 +147,7 @@ export default function TargetLayout({
             <TabsTrigger value="endpoints" asChild>
               <Link href={tabPaths.endpoints} className="flex items-center gap-0.5">
                 URLs
-                <Badge className="text-xs bg-chart-5 text-white border-0">
+                <Badge className="text-xs bg-primary text-primary-foreground border-0">
                   {counts.endpoints}
                 </Badge>
               </Link>
@@ -155,7 +155,7 @@ export default function TargetLayout({
             <TabsTrigger value="websites" asChild>
               <Link href={tabPaths.websites} className="flex items-center gap-0.5">
                 Websites
-                <Badge className="text-xs bg-chart-5 text-white border-0">
+                <Badge className="text-xs bg-primary text-primary-foreground border-0">
                   {counts.websites}
                 </Badge>
               </Link>
@@ -163,7 +163,7 @@ export default function TargetLayout({
             <TabsTrigger value="directories" asChild>
               <Link href={tabPaths.directories} className="flex items-center gap-0.5">
                 Directories
-                <Badge className="text-xs bg-chart-5 text-white border-0">
+                <Badge className="text-xs bg-primary text-primary-foreground border-0">
                   {counts.directories}
                 </Badge>
               </Link>
@@ -171,7 +171,7 @@ export default function TargetLayout({
             <TabsTrigger value="ip-addresses" asChild>
               <Link href={tabPaths["ip-addresses"]} className="flex items-center gap-0.5">
                 IP Addresses
-                <Badge className="text-xs bg-chart-5 text-white border-0">
+                <Badge className="text-xs bg-primary text-primary-foreground border-0">
                   {counts["ip-addresses"]}
                 </Badge>
               </Link>
@@ -179,7 +179,7 @@ export default function TargetLayout({
             <TabsTrigger value="vulnerabilities" asChild>
               <Link href={tabPaths.vulnerabilities} className="flex items-center gap-0.5">
                 Vulnerabilities
-                <Badge className="text-xs bg-chart-5 text-white border-0">
+                <Badge className="text-xs bg-primary text-primary-foreground border-0">
                   {counts.vulnerabilities}
                 </Badge>
               </Link>
