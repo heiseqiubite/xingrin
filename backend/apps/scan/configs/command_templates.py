@@ -95,7 +95,7 @@ PORT_SCAN_COMMANDS = {
 SITE_SCAN_COMMANDS = {
     'httpx': {
         'base': (
-            'httpx -l {url_file} '
+            '{scan_tools_base}/httpx -l {url_file} '
             '-status-code -content-type -content-length '
             '-location -title -server -body-preview '
             '-tech-detect -cdn -vhost '
@@ -167,7 +167,7 @@ URL_FETCH_COMMANDS = {
     
     'httpx': {
         'base': (
-            'httpx -l {url_file} '
+            '{scan_tools_base}/httpx -l {url_file} '
             '-status-code -content-type -content-length '
             '-location -title -server -body-preview '
             '-tech-detect -cdn -vhost '
