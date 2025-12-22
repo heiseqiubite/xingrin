@@ -70,7 +70,9 @@
 }
 
 /* 基础主题 - Vercel 风格 (黑白灰) */
-:root {
+/* 只在没有设置 data-theme 时应用默认样式 */
+:root:not([data-theme]),
+[data-theme="vercel"] {
   --radius: 0.5rem;
   --background: oklch(0.9900 0 0);
   --foreground: oklch(0 0 0);
