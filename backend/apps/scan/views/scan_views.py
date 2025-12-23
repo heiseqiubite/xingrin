@@ -97,15 +97,24 @@ class ScanViewSet(viewsets.ModelViewSet):
         
         功能：
         1. 接收目标列表和引擎配置
-        2. 自动批量创建/获取目标
-        3. 立即发起批量扫描
+        2. 自动解析输入（支持 URL、域名、IP、CIDR）
+        3. 批量创建 Target、Website、Endpoint 资产
+        4. 立即发起批量扫描
         
         请求参数：
         {
-            "targets": [{"name": "example.com"}, {"name": "1.1.1.1"}],
+            "targets": [{"name": "example.com"}, {"name": "https://example.com/api"}],
             "engine_id": 1
         }
+        
+        支持的输入格式：
+        - 域名: example.com
+        - IP: 192.168.1.1
+        - CIDR: 10.0.0.0/8
+        - URL: https://example.com/api/v1
         """
+        from ..services.quick_scan_service import QuickScanService
+        
         serializer = QuickScanSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
@@ -113,24 +122,20 @@ class ScanViewSet(viewsets.ModelViewSet):
         engine_id = serializer.validated_data.get('engine_id')
         
         try:
-            # 1. 批量创建/获取目标
-            target_service = TargetService()
-            batch_result = target_service.batch_create_targets(
-                targets_data=targets_data,
-                organization_id=None  # 快速扫描不关联组织
-            )
+            # 提取输入字符串列表
+            inputs = [t['name'] for t in targets_data]
             
-            # 收集所有目标对象（包括新创建和已存在的）
-            # batch_create_targets 返回的是统计信息，我们需要获取目标对象列表
-            # 这里重新查询刚刚创建/获取的目标
-            target_names = [t['name'] for t in targets_data]
-            targets = target_service.get_targets_by_names(target_names)
+            # 1. 使用 QuickScanService 解析输入并创建资产
+            quick_scan_service = QuickScanService()
+            result = quick_scan_service.process_quick_scan(inputs, engine_id)
+            
+            targets = result['targets']
             
             if not targets:
-                return Response(
-                    {'error': '没有有效的目标可供扫描'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                return Response({
+                    'error': '没有有效的目标可供扫描',
+                    'errors': result.get('errors', [])
+                }, status=status.HTTP_400_BAD_REQUEST)
             
             # 2. 获取扫描引擎
             engine_service = EngineService()
@@ -150,10 +155,9 @@ class ScanViewSet(viewsets.ModelViewSet):
             
             return Response({
                 'message': f'快速扫描已启动：{len(created_scans)} 个任务',
-                'target_stats': {
-                    'created': batch_result['created_count'],
-                    'failed': batch_result['failed_count']
-                },
+                'target_stats': result['target_stats'],
+                'asset_stats': result['asset_stats'],
+                'errors': result.get('errors', []),
                 'scans': scan_serializer.data
             }, status=status.HTTP_201_CREATED)
             

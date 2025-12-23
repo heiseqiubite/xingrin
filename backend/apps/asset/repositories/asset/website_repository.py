@@ -120,3 +120,53 @@ class DjangoWebSiteRepository:
         """
         website = WebSite.objects.filter(url=url, target_id=target_id).first()
         return website.id if website else None
+
+    def bulk_create_ignore_conflicts(self, items: List[WebSiteDTO]) -> int:
+        """
+        批量创建 WebSite（存在即跳过）
+        
+        与 bulk_upsert 不同，此方法不会更新已存在的记录。
+        适用于快速扫描场景，只提供 URL，没有其他字段数据。
+        
+        Args:
+            items: WebSite DTO 列表
+            
+        Returns:
+            int: 处理的记录数
+        """
+        if not items:
+            return 0
+        
+        try:
+            # 直接从 DTO 字段构建 Model
+            websites = [
+                WebSite(
+                    target_id=item.target_id,
+                    url=item.url,
+                    host=item.host or '',
+                    location=item.location or '',
+                    title=item.title or '',
+                    webserver=item.webserver or '',
+                    body_preview=item.body_preview or '',
+                    content_type=item.content_type or '',
+                    tech=item.tech if item.tech else [],
+                    status_code=item.status_code,
+                    content_length=item.content_length,
+                    vhost=item.vhost
+                )
+                for item in items
+            ]
+            
+            with transaction.atomic():
+                WebSite.objects.bulk_create(
+                    websites,
+                    ignore_conflicts=True,
+                    batch_size=1000
+                )
+            
+            logger.debug(f"批量创建 WebSite 成功（ignore_conflicts）: {len(items)} 条")
+            return len(items)
+                
+        except Exception as e:
+            logger.error(f"批量创建 WebSite 失败: {e}")
+            raise

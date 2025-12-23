@@ -86,6 +86,7 @@ directory_scan:
     ffuf:
       enabled: true
       timeout: auto                       # 自动计算（字典行数 × 0.02秒），范围 60秒 ~ 2小时
+      max-workers: 5                      # 并发扫描站点数（默认 5）
       wordlist-name: dir_default.txt      # 对应「字典管理」中的 Wordlist.name
       delay: 0.1-2.0                      # 请求间隔，支持范围随机（如 "0.1-2.0"）
       threads: 10                         # 并发线程数（默认 40）

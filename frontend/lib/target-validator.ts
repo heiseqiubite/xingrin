@@ -3,13 +3,16 @@ import { parse as parseDomain } from 'tldts'
 
 /**
  * 目标验证工具类
- * 支持验证三种目标类型：域名、IP、CIDR
+ * 支持验证四种目标类型：域名、IP、CIDR、URL
  */
+
+export type InputType = 'url' | 'domain' | 'ip' | 'cidr'
 
 export interface TargetValidationResult {
   isValid: boolean
   error?: string
-  type?: 'domain' | 'ip' | 'cidr'
+  type?: InputType
+  isEmptyLine?: boolean  // 标记空行，前端过滤掉不发送
 }
 
 export class TargetValidator {
@@ -212,6 +215,117 @@ export class TargetValidator {
       ...this.validateTarget(target),
       index,
       originalTarget: target
+    }))
+  }
+
+  // ==================== URL 支持扩展 ====================
+
+  /**
+   * 检测输入类型
+   * 用于快速扫描输入解析
+   */
+  static detectInputType(input: string): InputType {
+    // URL: 包含 :// 
+    if (input.includes('://')) {
+      return 'url'
+    }
+    
+    // 包含 / 但不是 CIDR，视为 URL（缺少 scheme 的 URL）
+    if (input.includes('/')) {
+      // CIDR 格式: IP/prefix，如 10.0.0.0/8
+      if (this.looksLikeCidr(input)) {
+        return 'cidr'
+      }
+      return 'url'
+    }
+    
+    // CIDR: 匹配 IP/prefix 格式
+    if (this.looksLikeCidr(input)) {
+      return 'cidr'
+    }
+    
+    // IP: 匹配 IPv4 格式
+    if (this.looksLikeIp(input)) {
+      return 'ip'
+    }
+    
+    // 默认为域名
+    return 'domain'
+  }
+
+  /**
+   * 判断是否为 CIDR 格式
+   */
+  static looksLikeCidr(input: string): boolean {
+    return /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$/.test(input)
+  }
+
+  /**
+   * 判断是否为 IP 地址格式
+   */
+  static looksLikeIp(input: string): boolean {
+    return /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(input)
+  }
+
+  /**
+   * 验证 URL 格式
+   * URL 必须包含 scheme（http:// 或 https://）
+   */
+  static validateUrl(url: string): TargetValidationResult {
+    // 检查是否包含 scheme
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return { isValid: false, error: 'URL 必须包含协议（http:// 或 https://）' }
+    }
+    
+    try {
+      const parsed = new URL(url)
+      if (!parsed.hostname) {
+        return { isValid: false, error: 'URL 必须包含主机名' }
+      }
+      return { isValid: true, type: 'url' }
+    } catch {
+      return { isValid: false, error: 'URL 格式无效' }
+    }
+  }
+
+  /**
+   * 扩展验证方法，支持 URL 输入
+   * 只做类型检测和基本格式验证，详细解析由后端完成
+   */
+  static validateInput(input: string): TargetValidationResult {
+    const trimmed = input.trim()
+    
+    // 1. 空行跳过，不报错
+    if (trimmed.length === 0) {
+      return { isValid: true, type: undefined, isEmptyLine: true }
+    }
+    
+    // 2. 检测输入类型
+    const inputType = this.detectInputType(trimmed)
+    
+    // 3. 根据类型进行验证
+    switch (inputType) {
+      case 'url':
+        return this.validateUrl(trimmed)
+      case 'ip':
+        return this.validateIP(trimmed)
+      case 'cidr':
+        return this.validateCIDR(trimmed)
+      case 'domain':
+        return this.validateDomain(trimmed)
+      default:
+        return this.validateDomain(trimmed)
+    }
+  }
+
+  /**
+   * 批量验证输入（支持 URL）
+   */
+  static validateInputBatch(inputs: string[]): Array<TargetValidationResult & { lineNumber: number; originalInput: string }> {
+    return inputs.map((input, index) => ({
+      ...this.validateInput(input),
+      lineNumber: index + 1,
+      originalInput: input
     }))
   }
 }

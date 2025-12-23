@@ -1,6 +1,8 @@
-"""域名、IP、端口和目标验证工具函数"""
+"""域名、IP、端口、URL 和目标验证工具函数"""
 import ipaddress
 import logging
+from urllib.parse import urlparse
+
 import validators
 
 logger = logging.getLogger(__name__)
@@ -42,6 +44,25 @@ def validate_ip(ip: str) -> None:
         ipaddress.ip_address(ip)
     except ValueError:
         raise ValueError(f"IP 地址格式无效: {ip}")
+
+
+def is_valid_ip(ip: str) -> bool:
+    """
+    判断是否为有效 IP 地址（不抛异常）
+    
+    Args:
+        ip: IP 地址字符串
+        
+    Returns:
+        bool: 是否为有效 IP 地址
+    """
+    if not ip:
+        return False
+    try:
+        ipaddress.ip_address(ip)
+        return True
+    except ValueError:
+        return False
 
 
 def validate_cidr(cidr: str) -> None:
@@ -140,3 +161,72 @@ def validate_port(port: any) -> tuple[bool, int | None]:
     except (ValueError, TypeError):
         logger.warning("端口号格式错误，无法转换为整数: %s", port)
         return False, None
+
+
+# ==================== URL 验证函数 ====================
+
+def validate_url(url: str) -> None:
+    """
+    验证 URL 格式，必须包含 scheme（http:// 或 https://）
+    
+    Args:
+        url: URL 字符串
+        
+    Raises:
+        ValueError: URL 格式无效或缺少 scheme
+    """
+    if not url:
+        raise ValueError("URL 不能为空")
+    
+    # 检查是否包含 scheme
+    if not url.startswith('http://') and not url.startswith('https://'):
+        raise ValueError("URL 必须包含协议（http:// 或 https://）")
+    
+    try:
+        parsed = urlparse(url)
+        if not parsed.hostname:
+            raise ValueError("URL 必须包含主机名")
+    except Exception:
+        raise ValueError(f"URL 格式无效: {url}")
+
+
+def detect_input_type(input_str: str) -> str:
+    """
+    检测输入类型（用于快速扫描输入解析）
+    
+    Args:
+        input_str: 输入字符串（应该已经 strip）
+        
+    Returns:
+        str: 输入类型 ('url', 'domain', 'ip', 'cidr')
+    """
+    if not input_str:
+        raise ValueError("输入不能为空")
+    
+    # 1. 包含 :// 一定是 URL
+    if '://' in input_str:
+        return 'url'
+    
+    # 2. 包含 / 需要判断是 CIDR 还是 URL（缺少 scheme）
+    if '/' in input_str:
+        # CIDR 格式: IP/prefix，如 10.0.0.0/8
+        parts = input_str.split('/')
+        if len(parts) == 2:
+            ip_part, prefix_part = parts
+            # 如果斜杠后是纯数字且在 0-32 范围内，检查是否是 CIDR
+            if prefix_part.isdigit() and 0 <= int(prefix_part) <= 32:
+                ip_parts = ip_part.split('.')
+                if len(ip_parts) == 4 and all(p.isdigit() for p in ip_parts):
+                    return 'cidr'
+        # 不是 CIDR，视为 URL（缺少 scheme，后续验证会报错）
+        return 'url'
+    
+    # 3. 检查是否是 IP 地址
+    try:
+        ipaddress.ip_address(input_str)
+        return 'ip'
+    except ValueError:
+        pass
+    
+    # 4. 默认为域名
+    return 'domain'

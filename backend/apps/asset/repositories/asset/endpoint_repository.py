@@ -99,3 +99,54 @@ class DjangoEndpointRepository:
             int: 端点数量
         """
         return Endpoint.objects.filter(target_id=target_id).count()
+
+    def bulk_create_ignore_conflicts(self, items: List[EndpointDTO]) -> int:
+        """
+        批量创建端点（存在即跳过）
+        
+        与 bulk_upsert 不同，此方法不会更新已存在的记录。
+        适用于快速扫描场景，只提供 URL，没有其他字段数据。
+        
+        Args:
+            items: 端点 DTO 列表
+            
+        Returns:
+            int: 处理的记录数
+        """
+        if not items:
+            return 0
+        
+        try:
+            # 直接从 DTO 字段构建 Model
+            endpoints = [
+                Endpoint(
+                    target_id=item.target_id,
+                    url=item.url,
+                    host=item.host or '',
+                    title=item.title or '',
+                    status_code=item.status_code,
+                    content_length=item.content_length,
+                    webserver=item.webserver or '',
+                    body_preview=item.body_preview or '',
+                    content_type=item.content_type or '',
+                    tech=item.tech if item.tech else [],
+                    vhost=item.vhost,
+                    location=item.location or '',
+                    matched_gf_patterns=item.matched_gf_patterns if item.matched_gf_patterns else []
+                )
+                for item in items
+            ]
+            
+            with transaction.atomic():
+                Endpoint.objects.bulk_create(
+                    endpoints,
+                    ignore_conflicts=True,
+                    batch_size=1000
+                )
+            
+            logger.debug(f"批量创建端点成功（ignore_conflicts）: {len(items)} 条")
+            return len(items)
+                
+        except Exception as e:
+            logger.error(f"批量创建端点失败: {e}")
+            raise

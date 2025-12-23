@@ -17,11 +17,12 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { 
-  Zap, Target, Settings, Check, ChevronRight, ChevronLeft, Loader2, ChevronDown, ChevronUp
+  Zap, Target, Settings, Check, ChevronRight, ChevronLeft, Loader2, ChevronDown, ChevronUp, AlertCircle
 } from "lucide-react"
 import { getEngines } from "@/services/engine.service"
 import { quickScan } from "@/services/scan.service"
 import { CAPABILITY_CONFIG, getEngineIcon, parseEngineCapabilities } from "@/lib/engine-config"
+import { TargetValidator } from "@/lib/target-validator"
 import type { ScanEngine } from "@/types/engine.types"
 
 // 步骤定义
@@ -66,6 +67,17 @@ export function QuickScanDialog({ trigger }: QuickScanDialogProps) {
       .filter(t => t.length > 0)
   }
   
+  // 使用 TargetValidator 验证输入（支持 URL）
+  const validationResults = React.useMemo(() => {
+    const lines = targetInput.split('\n')
+    return TargetValidator.validateInputBatch(lines)
+  }, [targetInput])
+  
+  // 过滤掉空行，只保留有效输入
+  const validInputs = validationResults.filter(r => r.isValid && !r.isEmptyLine)
+  const invalidInputs = validationResults.filter(r => !r.isValid)
+  const hasErrors = invalidInputs.length > 0
+  
   
   // 加载引擎列表
   React.useEffect(() => {
@@ -100,35 +112,29 @@ export function QuickScanDialog({ trigger }: QuickScanDialogProps) {
     }
   }
   
-  // 验证单个目标
+  // 验证单个目标（保留用于兼容，但实际使用 TargetValidator）
   const validateSingleTarget = (target: string): boolean => {
-    if (!target.trim()) return false
-    const domainPattern = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/
-    const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/
-    const cidrPattern = /^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/
-    return domainPattern.test(target) || ipPattern.test(target) || cidrPattern.test(target)
+    const result = TargetValidator.validateInput(target)
+    return result.isValid && !result.isEmptyLine
   }
   
   // 验证所有目标
   const validateTargets = (): { valid: boolean; targets: string[]; invalid: string[] } => {
-    const targets = parseTargets(targetInput)
-    if (targets.length === 0) {
-      return { valid: false, targets: [], invalid: [] }
-    }
-    const invalid = targets.filter(t => !validateSingleTarget(t))
+    // 使用已计算的验证结果
+    const targets = validInputs.map(r => r.originalInput)
+    const invalid = invalidInputs.map(r => r.originalInput)
     return { valid: invalid.length === 0, targets, invalid }
   }
   
   // 下一步
   const handleNext = () => {
     if (step === 1) {
-      const { valid, targets, invalid } = validateTargets()
-      if (targets.length === 0) {
-        toast.error("请输入至少一个目标")
+      if (validInputs.length === 0) {
+        toast.error("请输入至少一个有效目标")
         return
       }
-      if (!valid) {
-        toast.error(`以下目标格式无效：${invalid.slice(0, 3).join(", ")}${invalid.length > 3 ? "..." : ""}`)
+      if (hasErrors) {
+        toast.error(`存在 ${invalidInputs.length} 个无效输入，请修正后继续`)
         return
       }
     }
@@ -148,7 +154,7 @@ export function QuickScanDialog({ trigger }: QuickScanDialogProps) {
   
   // 提交扫描
   const handleSubmit = async () => {
-    const targets = parseTargets(targetInput)
+    const targets = validInputs.map(r => r.originalInput)
     if (targets.length === 0) return
     
     setIsSubmitting(true)
@@ -273,12 +279,11 @@ export function QuickScanDialog({ trigger }: QuickScanDialogProps) {
                       value={targetInput}
                       onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setTargetInput(e.target.value)}
                       onScroll={handleTextareaScroll}
-                      placeholder={`请输入目标，每行一个
-支持域名、IP、CIDR
-例如：
-example.com
-192.168.1.1
-10.0.0.0/8`}
+                      placeholder={`输入目标，每行一个。支持以下格式：
+- 域名: example.com
+- IP: 192.168.1.1
+- CIDR: 10.0.0.0/8
+- URL: https://example.com/api/v1`}
                       className="font-mono h-full overflow-y-auto resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 leading-[1.4] text-sm py-2"
                       style={{ lineHeight: '20px' }}
                       autoFocus
@@ -286,12 +291,33 @@ example.com
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {parsedTargets.length > 0 ? (
-                    <span className="text-primary">{parsedTargets.length} 个目标</span>
+                  {validInputs.length > 0 ? (
+                    <span className="text-primary">{validInputs.length} 个有效目标</span>
                   ) : (
                     "0 个目标"
                   )}
+                  {hasErrors && (
+                    <span className="text-destructive ml-2">
+                      {invalidInputs.length} 个无效
+                    </span>
+                  )}
                 </p>
+                {/* 显示验证错误 */}
+                {hasErrors && (
+                  <div className="mt-2 max-h-[60px] overflow-y-auto space-y-1">
+                    {invalidInputs.slice(0, 3).map((r) => (
+                      <div key={r.lineNumber} className="flex items-center gap-1 text-xs text-destructive">
+                        <AlertCircle className="h-3 w-3 flex-shrink-0" />
+                        <span>行 {r.lineNumber}: {r.error}</span>
+                      </div>
+                    ))}
+                    {invalidInputs.length > 3 && (
+                      <div className="text-xs text-muted-foreground">
+                        还有 {invalidInputs.length - 3} 个错误...
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -433,11 +459,11 @@ example.com
                 <div>
                   <span className="text-sm text-muted-foreground">目标</span>
                   <div className="mt-1 max-h-[100px] overflow-y-auto">
-                    {parsedTargets.map((target, idx) => (
-                      <div key={idx} className="font-mono text-sm">{target}</div>
+                    {validInputs.map((r, idx) => (
+                      <div key={idx} className="font-mono text-sm">{r.originalInput}</div>
                     ))}
                   </div>
-                  <span className="text-xs text-muted-foreground">共 {parsedTargets.length} 个目标</span>
+                  <span className="text-xs text-muted-foreground">共 {validInputs.length} 个目标</span>
                 </div>
                 <div className="flex items-center justify-between pt-2 border-t">
                   <span className="text-sm text-muted-foreground">引擎</span>

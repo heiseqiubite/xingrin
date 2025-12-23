@@ -119,22 +119,24 @@ def calculate_directory_scan_timeout(
         return min_timeout
 
 
-def _get_max_workers(enabled_tools: dict, default: int = DEFAULT_MAX_WORKERS) -> int:
+def _get_max_workers(tool_config: dict, default: int = DEFAULT_MAX_WORKERS) -> int:
     """
-    从工具配置中获取 max_workers 参数
+    从单个工具配置中获取 max_workers 参数
     
     Args:
-        enabled_tools: 启用的工具配置字典
+        tool_config: 单个工具的配置字典，如 {'max_workers': 10, 'threads': 5, ...}
         default: 默认值，默认为 5
         
     Returns:
         int: max_workers 值
     """
-    for tool_config in enabled_tools.values():
-        if isinstance(tool_config, dict) and 'max_workers' in tool_config:
-            max_workers = tool_config['max_workers']
-            if isinstance(max_workers, int) and max_workers > 0:
-                return max_workers
+    if not isinstance(tool_config, dict):
+        return default
+    
+    # 支持 max_workers 和 max-workers（YAML 中划线会被转换）
+    max_workers = tool_config.get('max_workers') or tool_config.get('max-workers')
+    if max_workers is not None and isinstance(max_workers, int) and max_workers > 0:
+        return max_workers
     return default
 
 
@@ -416,12 +418,9 @@ def _run_scans_concurrently(
         logger.warning("站点列表为空")
         return 0, 0, []
     
-    # 获取 max_workers 配置
-    max_workers = _get_max_workers(enabled_tools)
-    
     logger.info(
-        "准备并发扫描 %d 个站点，使用工具: %s，最大并发数: %d",
-        len(sites), ', '.join(enabled_tools.keys()), max_workers
+        "准备并发扫描 %d 个站点，使用工具: %s",
+        len(sites), ', '.join(enabled_tools.keys())
     )
     
     total_directories = 0
@@ -430,6 +429,9 @@ def _run_scans_concurrently(
     
     # 遍历每个工具
     for tool_name, tool_config in enabled_tools.items():
+        # 每个工具独立获取 max_workers 配置
+        max_workers = _get_max_workers(tool_config)
+        
         logger.info("="*60)
         logger.info("使用工具: %s (并发模式, max_workers=%d)", tool_name, max_workers)
         logger.info("="*60)
@@ -652,15 +654,15 @@ def directory_scan_flow(
             }
         
         # Step 2: 工具配置信息
-        max_workers = _get_max_workers(enabled_tools)
         logger.info("Step 2: 工具配置信息")
-        logger.info(
-            "✓ 启用工具: %s, 最大并发数: %d",
-            ', '.join(enabled_tools.keys()), max_workers
-        )
+        tool_info = []
+        for tool_name, tool_config in enabled_tools.items():
+            mw = _get_max_workers(tool_config)
+            tool_info.append(f"{tool_name}(max_workers={mw})")
+        logger.info("✓ 启用工具: %s", ', '.join(tool_info))
         
         # Step 3: 并发执行扫描工具并实时保存结果
-        logger.info("Step 3: 并发执行扫描工具并实时保存结果 (max_workers=%d)", max_workers)
+        logger.info("Step 3: 并发执行扫描工具并实时保存结果")
         total_directories, processed_sites, failed_sites = _run_scans_concurrently(
             enabled_tools=enabled_tools,
             sites_file=sites_file,
