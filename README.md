@@ -165,16 +165,8 @@ flowchart TB
 ### 📊 可视化界面
 - **数据统计** - 资产/漏洞统计仪表盘
 - **实时通知** - WebSocket 消息推送
-- **暗色主题** - 支持明暗主题切换
 
 ---
-
-## 🛠️ 技术栈
-
-- **前端**: Next.js + React + TailwindCSS
-- **后端**: Django + Django REST Framework
-- **数据库**: PostgreSQL + Redis
-- **部署**: Docker + Nginx
 
 ## 📦 快速开始
 
