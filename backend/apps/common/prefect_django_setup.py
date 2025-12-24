@@ -16,6 +16,7 @@ def setup_django_for_prefect():
     1. 添加项目根目录到 Python 路径
     2. 设置 DJANGO_SETTINGS_MODULE 环境变量
     3. 调用 django.setup() 初始化 Django
+    4. 关闭旧的数据库连接，确保使用新连接
     
     使用方式：
         from apps.common.prefect_django_setup import setup_django_for_prefect
@@ -36,6 +37,25 @@ def setup_django_for_prefect():
     # 初始化 Django
     import django
     django.setup()
+    
+    # 关闭所有旧的数据库连接，确保 Worker 进程使用新连接
+    # 解决 "server closed the connection unexpectedly" 问题
+    from django.db import connections
+    connections.close_all()
+
+
+def close_old_db_connections():
+    """
+    关闭旧的数据库连接
+    
+    在长时间运行的任务中调用此函数，可以确保使用有效的数据库连接。
+    适用于：
+    - Flow 开始前
+    - Task 开始前
+    - 长时间空闲后恢复操作前
+    """
+    from django.db import connections
+    connections.close_all()
 
 
 # 自动执行初始化（导入即生效）

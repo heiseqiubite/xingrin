@@ -114,15 +114,20 @@ DATABASES = {
         # - 60-120: 推荐值（平衡性能和资源占用）
         # - 300+: 适合长时间任务（减少连接重建开销）
         # - None: 永久连接（仅适合专用连接池，不推荐）
-        'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '300')),  # 远程数据库使用 300 秒，减少重连开销
+        'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '60')),  # 降低到 60 秒，更快检测失效连接
+        
+        # Django 4.1+ 连接健康检查：每次使用前验证连接是否有效
+        # 解决 "server closed the connection unexpectedly" 问题
+        'CONN_HEALTH_CHECKS': True,
         
         # PostgreSQL 特定选项 - 针对远程数据库优化
         'OPTIONS': {
             'connect_timeout': 30,  # 连接超时 30 秒（远程数据库需要更长时间）
             'options': '-c statement_timeout=60000 -c idle_in_transaction_session_timeout=300000',  # SQL 语句超时 60 秒，事务空闲超时 5 分钟
-            'keepalives_idle': 600,  # TCP keepalive 空闲时间 10 分钟
-            'keepalives_interval': 30,  # TCP keepalive 间隔 30 秒
-            'keepalives_count': 3,  # TCP keepalive 重试次数
+            'keepalives': 1,  # 启用 TCP keepalive
+            'keepalives_idle': 30,  # TCP keepalive 空闲时间 30 秒（更积极地检测断连）
+            'keepalives_interval': 10,  # TCP keepalive 间隔 10 秒
+            'keepalives_count': 5,  # TCP keepalive 重试次数
             # 性能优化参数
             'sslmode': 'disable',  # 禁用SSL以减少连接延迟（如果网络安全可控）
             'application_name': 'xingrin_scanner',  # 标识应用名称，便于监控
