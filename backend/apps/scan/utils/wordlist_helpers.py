@@ -83,7 +83,8 @@ def ensure_wordlist_local(wordlist_name: str) -> str:
                 "无法确定 Django API 地址：请配置 SERVER_URL 或 PUBLIC_HOST 环境变量"
             )
         # 远程 Worker 通过 nginx HTTPS 访问，不再直连 8888
-        api_base = f"https://{public_host}/api"
+        public_port = getattr(settings, 'PUBLIC_PORT', '8083')
+        api_base = f"https://{public_host}:{public_port}/api"
     query = urllib_parse.urlencode({'wordlist': wordlist_name})
     download_url = f"{api_base.rstrip('/')}/wordlists/download/?{query}"
 
