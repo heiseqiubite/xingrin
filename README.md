@@ -181,7 +181,7 @@ sudo ./install.sh
 
 ### 访问服务
 
-- **Web 界面**: `https://localhost` 
+- **Web 界面**: `https://ip:8083` 
 
 ### 常用命令
 
