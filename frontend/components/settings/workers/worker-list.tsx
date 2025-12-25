@@ -57,7 +57,7 @@ const STATUS_MAP: Record<WorkerStatus, 'online' | 'offline' | 'maintenance' | 'd
 
 // 状态中文标签
 const STATUS_LABEL: Record<WorkerStatus, string> = {
-  online: '运行中',
+  online: '在线',
   offline: '离线',
   pending: '等待部署',
   deploying: '部署中',
