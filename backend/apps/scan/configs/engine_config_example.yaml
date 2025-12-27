@@ -1,7 +1,8 @@
 # 引擎配置
 #
 # 参数命名：统一用中划线（如 rate-limit），系统自动转换为下划线
-# 必需参数：enabled（是否启用）、timeout（超时秒数，auto 表示自动计算）
+# 必需参数：enabled（是否启用）
+# 可选参数：timeout（超时秒数，默认 auto 自动计算）
 
 # ==================== 子域名发现 ====================
 # 
@@ -39,7 +40,7 @@ subdomain_discovery:
   bruteforce:
     enabled: false
     subdomain_bruteforce:
-      timeout: auto                      # 自动根据字典行数计算
+      # timeout: auto                    # 自动根据字典行数计算
       wordlist-name: subdomains-top1million-110000.txt    # 对应「字典管理」中的 Wordlist.name
 
   # === Stage 3: 变异生成 + 存活验证（可选）===
@@ -52,14 +53,14 @@ subdomain_discovery:
   resolve:
     enabled: true
     subdomain_resolve:
-      timeout: auto      # 自动根据候选子域数量计算
+      # timeout: auto    # 自动根据候选子域数量计算
 
 # ==================== 端口扫描 ====================
 port_scan:
   tools:
     naabu_active:
       enabled: true
-      timeout: auto      # 自动计算（目标数 × 端口数 × 0.5秒），范围 60秒 ~ 2天
+      # timeout: auto    # 自动计算（目标数 × 端口数 × 0.5秒），范围 60秒 ~ 2天
       threads: 200       # 并发连接数（默认 5）
       # ports: 1-65535   # 扫描端口范围（默认 1-65535）
       top-ports: 100     # 扫描 nmap top 100 端口
@@ -67,14 +68,14 @@ port_scan:
       
     naabu_passive:
       enabled: true
-      timeout: auto      # 被动扫描通常较快
+      # timeout: auto    # 被动扫描通常较快
 
 # ==================== 站点扫描 ====================
 site_scan:
   tools:
     httpx:
       enabled: true
-      timeout: auto          # 自动计算（每个 URL 约 1 秒）
+      # timeout: auto        # 自动计算（每个 URL 约 1 秒）
       # threads: 50          # 并发线程数（默认 50）
       # rate-limit: 150      # 每秒请求数（默认 150）
       # request-timeout: 10  # 单个请求超时秒数（默认 10）
@@ -93,7 +94,7 @@ directory_scan:
   tools:
     ffuf:
       enabled: true
-      timeout: auto                       # 自动计算（字典行数 × 0.02秒），范围 60秒 ~ 2小时
+      # timeout: auto                     # 自动计算（字典行数 × 0.02秒），范围 60秒 ~ 2小时
       max-workers: 5                      # 并发扫描站点数（默认 5）
       wordlist-name: dir_default.txt      # 对应「字典管理」中的 Wordlist.name
       delay: 0.1-2.0                      # 请求间隔，支持范围随机（如 "0.1-2.0"）
@@ -111,7 +112,7 @@ url_fetch:
     
     katana:
       enabled: true
-      timeout: auto      # 自动计算（根据站点数量）
+      # timeout: auto    # 自动计算（根据站点数量）
       depth: 5           # 爬取最大深度（默认 3）
       threads: 10        # 全局并发数
       rate-limit: 30     # 每秒最多请求数
@@ -121,7 +122,7 @@ url_fetch:
     
     uro:
       enabled: true
-      timeout: auto      # 自动计算（每 100 个 URL 约 1 秒），范围 30 ~ 300 秒
+      # timeout: auto    # 自动计算（每 100 个 URL 约 1 秒），范围 30 ~ 300 秒
       # whitelist:       # 只保留指定扩展名
       #   - php
       #   - asp
@@ -135,7 +136,7 @@ url_fetch:
     
     httpx:
       enabled: true
-      timeout: auto          # 自动计算（每个 URL 约 1 秒）
+      # timeout: auto        # 自动计算（每个 URL 约 1 秒）
       # threads: 50          # 并发线程数（默认 50）
       # rate-limit: 150      # 每秒请求数（默认 150）
       # request-timeout: 10  # 单个请求超时秒数（默认 10）
@@ -146,7 +147,7 @@ vuln_scan:
   tools:
     dalfox_xss:
       enabled: true
-      timeout: auto          # 自动计算（endpoints 行数 × 100 秒）
+      # timeout: auto        # 自动计算（endpoints 行数 × 100 秒）
       request-timeout: 10  # 单个请求超时秒数
       only-poc: r            # 只输出 POC 结果（r: 反射型）
       ignore-return: "302,404,403"  # 忽略的返回码
@@ -157,7 +158,7 @@ vuln_scan:
 
     nuclei:
       enabled: true
-      timeout: auto          # 自动计算（根据 endpoints 行数）
+      # timeout: auto        # 自动计算（根据 endpoints 行数）
       template-repo-names:   # 模板仓库列表，对应「Nuclei 模板」中的仓库名
         - nuclei-templates
         # - nuclei-custom    # 可追加自定义仓库
