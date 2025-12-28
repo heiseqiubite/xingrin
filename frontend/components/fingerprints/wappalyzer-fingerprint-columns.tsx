@@ -11,55 +11,48 @@ interface ColumnOptions {
   formatDate: (date: string) => string
 }
 
-/**
- * JSON 对象展示单元格 - 显示原始 JSON
- */
-function JsonCell({ data }: { data: any }) {
-  const [expanded, setExpanded] = React.useState(false)
-  
-  if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
-    return <span className="text-muted-foreground">-</span>
-  }
-  
-  const jsonStr = JSON.stringify(data)
-  const isLong = jsonStr.length > 50
-  
-  return (
-    <div className="flex flex-col gap-1">
-      <div className={`font-mono text-xs ${expanded ? "break-all whitespace-pre-wrap" : "truncate"}`}>
-        {expanded ? JSON.stringify(data, null, 2) : jsonStr}
-      </div>
-      {isLong && (
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="text-xs text-primary hover:underline self-start"
-        >
-          {expanded ? "收起" : "展开"}
-        </button>
-      )}
-    </div>
-  )
+interface RuleItem {
+  key: string
+  value: any
 }
 
 /**
- * 数组展示单元格 - 显示原始数组
+ * 提取指纹的所有规则（保持原始格式）
  */
-function ArrayCell({ data }: { data: any[] }) {
-  const [expanded, setExpanded] = React.useState(false)
+function extractRules(fp: WappalyzerFingerprint): RuleItem[] {
+  const rules: RuleItem[] = []
+  const ruleKeys = ['cookies', 'headers', 'scriptSrc', 'js', 'meta', 'html'] as const
   
-  if (!data || data.length === 0) {
+  for (const key of ruleKeys) {
+    const value = fp[key]
+    if (value && (Array.isArray(value) ? value.length > 0 : Object.keys(value).length > 0)) {
+      rules.push({ key, value })
+    }
+  }
+  
+  return rules
+}
+
+/**
+ * 规则列表单元格 - 显示原始 JSON 格式
+ */
+function RulesCell({ fp }: { fp: WappalyzerFingerprint }) {
+  const [expanded, setExpanded] = React.useState(false)
+  const rules = extractRules(fp)
+  
+  if (rules.length === 0) {
     return <span className="text-muted-foreground">-</span>
   }
   
-  const displayItems = expanded ? data : data.slice(0, 2)
-  const hasMore = data.length > 2
+  const displayRules = expanded ? rules : rules.slice(0, 2)
+  const hasMore = rules.length > 2
   
   return (
     <div className="flex flex-col gap-1">
       <div className="font-mono text-xs space-y-0.5">
-        {displayItems.map((item, idx) => (
+        {displayRules.map((rule, idx) => (
           <div key={idx} className={expanded ? "break-all" : "truncate"}>
-            {typeof item === 'object' ? JSON.stringify(item) : String(item)}
+            "{rule.key}": {JSON.stringify(rule.value)}
           </div>
         ))}
       </div>
@@ -120,7 +113,7 @@ export function createWappalyzerFingerprintColumns({
       enableResizing: true,
       size: 180,
     },
-    // 分类 - 直接显示数组
+    // 分类
     {
       accessorKey: "cats",
       meta: { title: "Cats" },
@@ -133,84 +126,33 @@ export function createWappalyzerFingerprintColumns({
         return <span className="font-mono text-xs">{JSON.stringify(cats)}</span>
       },
       enableResizing: true,
-      size: 120,
+      size: 100,
     },
-    // Cookies
+    // 规则（合并 cookies, headers, scriptSrc, js, meta, html）
     {
-      accessorKey: "cookies",
-      meta: { title: "Cookies" },
+      id: "rules",
+      meta: { title: "Rules" },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Cookies" />
+        <DataTableColumnHeader column={column} title="Rules" />
       ),
-      cell: ({ row }) => <JsonCell data={row.getValue("cookies")} />,
+      cell: ({ row }) => <RulesCell fp={row.original} />,
       enableResizing: true,
-      size: 200,
+      size: 350,
     },
-    // Headers
-    {
-      accessorKey: "headers",
-      meta: { title: "Headers" },
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Headers" />
-      ),
-      cell: ({ row }) => <JsonCell data={row.getValue("headers")} />,
-      enableResizing: true,
-      size: 200,
-    },
-    // Script Src
-    {
-      accessorKey: "scriptSrc",
-      meta: { title: "ScriptSrc" },
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="ScriptSrc" />
-      ),
-      cell: ({ row }) => <ArrayCell data={row.getValue("scriptSrc")} />,
-      enableResizing: true,
-      size: 200,
-    },
-    // JS
-    {
-      accessorKey: "js",
-      meta: { title: "JS" },
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="JS" />
-      ),
-      cell: ({ row }) => <ArrayCell data={row.getValue("js")} />,
-      enableResizing: true,
-      size: 180,
-    },
-    // Implies
+    // 依赖
     {
       accessorKey: "implies",
       meta: { title: "Implies" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Implies" />
       ),
-      cell: ({ row }) => <ArrayCell data={row.getValue("implies")} />,
+      cell: ({ row }) => {
+        const implies = row.getValue("implies") as string[]
+        if (!implies || implies.length === 0) return "-"
+        return <span className="font-mono text-xs">{implies.join(", ")}</span>
+      },
       enableResizing: true,
-      size: 180,
-    },
-    // Meta
-    {
-      accessorKey: "meta",
-      meta: { title: "Meta" },
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Meta" />
-      ),
-      cell: ({ row }) => <JsonCell data={row.getValue("meta")} />,
-      enableResizing: true,
-      size: 200,
-    },
-    // HTML
-    {
-      accessorKey: "html",
-      meta: { title: "HTML" },
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="HTML" />
-      ),
-      cell: ({ row }) => <ArrayCell data={row.getValue("html")} />,
-      enableResizing: true,
-      size: 200,
+      size: 150,
     },
     // 描述
     {
@@ -232,7 +174,7 @@ export function createWappalyzerFingerprintColumns({
       ),
       cell: ({ row }) => <ExpandableCell value={row.getValue("website")} variant="url" maxLines={1} />,
       enableResizing: true,
-      size: 200,
+      size: 180,
     },
     // CPE
     {
@@ -246,7 +188,7 @@ export function createWappalyzerFingerprintColumns({
         return cpe ? <span className="font-mono text-xs">{cpe}</span> : "-"
       },
       enableResizing: true,
-      size: 180,
+      size: 150,
     },
     // 创建时间
     {

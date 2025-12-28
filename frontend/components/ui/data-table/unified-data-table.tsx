@@ -391,14 +391,12 @@ export function UnifiedDataTable<TData>({
           filterExamples={filterExamples}
           leftContent={toolbarLeft}
         >
-          {toolbarRight}
-          
           {/* 列显示控制 */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
                 <IconLayoutColumns className="h-4 w-4" />
-                Columns
+                列控制
                 <IconChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -418,6 +416,8 @@ export function UnifiedDataTable<TData>({
                 ))}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {toolbarRight}
 
           {/* 下载按钮 */}
           {renderDownloadButton()}
