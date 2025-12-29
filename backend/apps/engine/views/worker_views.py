@@ -399,5 +399,5 @@ class WorkerNodeViewSet(viewsets.ModelViewSet):
             },
             'debug': settings.DEBUG,
             # Git 加速配置（用于 Git clone 加速，如 Nuclei 模板仓库）
-            'gitMirror': os.getenv('GIT_MIRROR', ''),
+            'gitMirror': settings.GIT_MIRROR,
         })
