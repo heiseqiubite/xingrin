@@ -368,7 +368,7 @@ export default function ScanEnginePage() {
           <AlertDialogHeader>
             <AlertDialogTitle>{tConfirm("deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {tConfirm("deleteEngineMessage", { name: engineToDelete?.name })}
+              {tConfirm("deleteEngineMessage", { name: engineToDelete?.name ?? "" })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
