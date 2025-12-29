@@ -186,6 +186,7 @@ class NucleiTemplateRepoService:
             RuntimeError: Git 命令执行失败
         """
         import subprocess
+        from apps.common.utils.xget_proxy import get_xget_proxy_url
 
         obj = self._get_repo_obj(repo_id)
 
@@ -196,9 +197,14 @@ class NucleiTemplateRepoService:
         cmd: List[str]
         action: str
 
+        # 获取代理后的 URL（如果启用了 xget 加速）
+        proxied_url = get_xget_proxy_url(obj.repo_url)
+        if proxied_url != obj.repo_url:
+            logger.info("使用 Xget 加速: %s -> %s", obj.repo_url, proxied_url)
+
         # 判断是 clone 还是 pull
         if git_dir.is_dir():
-            # 检查远程地址是否变化
+            # 检查远程地址是否变化（比较原始 URL，不是代理 URL）
             current_remote = subprocess.run(
                 ["git", "-C", str(local_path), "remote", "get-url", "origin"],
                 check=False,
@@ -208,12 +214,13 @@ class NucleiTemplateRepoService:
             )
             current_url = current_remote.stdout.strip() if current_remote.returncode == 0 else ""
             
-            if current_url != obj.repo_url:
+            # 检查是否需要重新 clone（原始 URL 或代理 URL 变化都需要）
+            if current_url not in [obj.repo_url, proxied_url]:
                 # 远程地址变化，删除旧目录重新 clone
                 logger.info("nuclei 模板仓库 %s 远程地址变化，重新 clone: %s -> %s", obj.id, current_url, obj.repo_url)
                 shutil.rmtree(local_path)
                 local_path.mkdir(parents=True, exist_ok=True)
-                cmd = ["git", "clone", "--depth", "1", obj.repo_url, str(local_path)]
+                cmd = ["git", "clone", "--depth", "1", proxied_url, str(local_path)]
                 action = "clone"
             else:
                 # 已有仓库且地址未变，执行 pull
@@ -224,7 +231,7 @@ class NucleiTemplateRepoService:
             if local_path.exists() and not local_path.is_dir():
                 raise RuntimeError(f"本地路径已存在且不是目录: {local_path}")
             # --depth 1 浅克隆，只获取最新提交，节省空间和时间
-            cmd = ["git", "clone", "--depth", "1", obj.repo_url, str(local_path)]
+            cmd = ["git", "clone", "--depth", "1", proxied_url, str(local_path)]
             action = "clone"
 
         # 执行 Git 命令
