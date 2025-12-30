@@ -1,17 +1,19 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import Editor, { type Monaco } from "@monaco-editor/react"
+import { useColorTheme } from "@/hooks/use-color-theme"
 import { useTranslations } from "next-intl"
 
 import { Card, CardContent } from "@/components/ui/card"
 import { useSystemLogs, useLogFiles } from "@/hooks/use-system-logs"
 import { LogToolbar } from "./log-toolbar"
-import { AnsiLogViewer } from "./ansi-log-viewer"
 
 const DEFAULT_FILE = "xingrin.log"
 const DEFAULT_LINES = 500
 
 export function SystemLogsView() {
+  const { currentTheme } = useColorTheme()
   const t = useTranslations("settings.systemLogs")
 
   // 状态管理
@@ -39,6 +41,20 @@ export function SystemLogsView() {
 
   const content = useMemo(() => logsData?.content ?? "", [logsData?.content])
 
+  const editorRef = useRef<any>(null)
+
+  // 自动滚动到底部
+  useEffect(() => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    const model = editor.getModel?.()
+    if (!model) return
+
+    const lastLine = model.getLineCount?.() ?? 1
+    editor.revealLine?.(lastLine)
+  }, [content])
+
   return (
     <Card>
       <CardContent className="space-y-4">
@@ -51,14 +67,28 @@ export function SystemLogsView() {
           onLinesChange={setLines}
           onAutoRefreshChange={setAutoRefresh}
         />
-        <div className="h-[calc(100vh-300px)] min-h-[360px] rounded-lg border overflow-hidden bg-[#1e1e1e]">
-          {content ? (
-            <AnsiLogViewer content={content} />
-          ) : (
-            <div className="flex items-center justify-center h-full text-muted-foreground">
-              {t("noContent")}
-            </div>
-          )}
+        <div className="h-[calc(100vh-300px)] min-h-[360px] rounded-lg border overflow-hidden">
+          <Editor
+            height="100%"
+            defaultLanguage="log"
+            value={content || t("noContent")}
+            theme={currentTheme.isDark ? "vs-dark" : "light"}
+            onMount={(editor) => {
+              editorRef.current = editor
+            }}
+            options={{
+              readOnly: true,
+              minimap: { enabled: false },
+              fontSize: 12,
+              lineNumbers: "off",
+              scrollBeyondLastLine: false,
+              automaticLayout: true,
+              folding: false,
+              wordWrap: "off",
+              renderLineHighlight: "none",
+              padding: { top: 12, bottom: 12 },
+            }}
+          />
         </div>
       </CardContent>
     </Card>
