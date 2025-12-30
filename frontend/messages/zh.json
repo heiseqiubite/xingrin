@@ -1230,6 +1230,7 @@
     "scanInitiated": "扫描已发起",
     "scanInitiatedDesc": "成功创建 {count} 个扫描任务",
     "initiateScanFailed": "发起扫描失败",
+    "noScansCreated": "未创建任何扫描任务",
     "unknownError": "未知错误",
     "engineNameRequired": "请输入引擎名称",
     "configRequired": "配置内容不能为空",

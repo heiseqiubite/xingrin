@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
 from apps.common.pagination import BasePagination
+from apps.common.response_helpers import success_response
 from apps.common.utils.filter_utils import apply_filters
 
 logger = logging.getLogger(__name__)
@@ -129,7 +130,7 @@ class BaseFingerprintViewSet(viewsets.ModelViewSet):
             raise ValidationError('fingerprints 必须是数组')
         
         result = self.get_service().batch_create_fingerprints(fingerprints)
-        return Response(result, status=status.HTTP_201_CREATED)
+        return success_response(data=result, status_code=status.HTTP_201_CREATED)
     
     @action(detail=False, methods=['post'])
     def import_file(self, request):
@@ -156,7 +157,7 @@ class BaseFingerprintViewSet(viewsets.ModelViewSet):
             raise ValidationError('文件中没有有效的指纹数据')
         
         result = self.get_service().batch_create_fingerprints(fingerprints)
-        return Response(result, status=status.HTTP_201_CREATED)
+        return success_response(data=result, status_code=status.HTTP_201_CREATED)
     
     @action(detail=False, methods=['post'], url_path='bulk-delete')
     def bulk_delete(self, request):
@@ -174,7 +175,7 @@ class BaseFingerprintViewSet(viewsets.ModelViewSet):
             raise ValidationError('ids 必须是数组')
         
         deleted_count = self.queryset.model.objects.filter(id__in=ids).delete()[0]
-        return Response({'deleted': deleted_count})
+        return success_response(data={'deleted': deleted_count})
     
     @action(detail=False, methods=['post'], url_path='delete-all')
     def delete_all(self, request):
@@ -185,7 +186,7 @@ class BaseFingerprintViewSet(viewsets.ModelViewSet):
         返回：{"deleted": 1000}
         """
         deleted_count = self.queryset.model.objects.all().delete()[0]
-        return Response({'deleted': deleted_count})
+        return success_response(data={'deleted': deleted_count})
     
     @action(detail=False, methods=['get'])
     def export(self, request):

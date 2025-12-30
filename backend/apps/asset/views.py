@@ -2,6 +2,8 @@ import logging
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from apps.common.response_helpers import success_response, error_response
+from apps.common.error_codes import ErrorCodes
 from rest_framework.request import Request
 from rest_framework.exceptions import NotFound, ValidationError as DRFValidationError
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
@@ -57,7 +59,7 @@ class AssetStatisticsViewSet(viewsets.ViewSet):
         """
         try:
             stats = self.service.get_statistics()
-            return Response({
+            return success_response(data={
                 'totalTargets': stats['total_targets'],
                 'totalSubdomains': stats['total_subdomains'],
                 'totalIps': stats['total_ips'],
@@ -80,9 +82,10 @@ class AssetStatisticsViewSet(viewsets.ViewSet):
             })
         except (DatabaseError, OperationalError) as e:
             logger.exception("获取资产统计数据失败")
-            return Response(
-                {'error': '获取统计数据失败'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            return error_response(
+                code=ErrorCodes.SERVER_ERROR,
+                message='Failed to get statistics',
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
     @action(detail=False, methods=['get'], url_path='history')
@@ -107,12 +110,13 @@ class AssetStatisticsViewSet(viewsets.ViewSet):
             days = min(max(days, 1), 90)  # 限制在 1-90 天
             
             history = self.service.get_statistics_history(days=days)
-            return Response(history)
+            return success_response(data=history)
         except (DatabaseError, OperationalError) as e:
             logger.exception("获取统计历史数据失败")
-            return Response(
-                {'error': '获取历史数据失败'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            return error_response(
+                code=ErrorCodes.SERVER_ERROR,
+                message='Failed to get history data',
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -177,33 +181,37 @@ class SubdomainViewSet(viewsets.ModelViewSet):
         
         target_pk = self.kwargs.get('target_pk')
         if not target_pk:
-            return Response(
-                {'error': '必须在目标下批量创建子域名'},
-                status=status.HTTP_400_BAD_REQUEST
+            return error_response(
+                code=ErrorCodes.VALIDATION_ERROR,
+                message='Must create subdomains under a target',
+                status_code=status.HTTP_400_BAD_REQUEST
             )
         
         # 获取目标
         try:
             target = Target.objects.get(pk=target_pk)
         except Target.DoesNotExist:
-            return Response(
-                {'error': '目标不存在'},
-                status=status.HTTP_404_NOT_FOUND
+            return error_response(
+                code=ErrorCodes.NOT_FOUND,
+                message='Target not found',
+                status_code=status.HTTP_404_NOT_FOUND
             )
         
         # 验证目标类型必须为域名
         if target.type != Target.TargetType.DOMAIN:
-            return Response(
-                {'error': '只有域名类型的目标支持导入子域名'},
-                status=status.HTTP_400_BAD_REQUEST
+            return error_response(
+                code=ErrorCodes.VALIDATION_ERROR,
+                message='Only domain type targets support subdomain import',
+                status_code=status.HTTP_400_BAD_REQUEST
             )
         
         # 获取请求体中的子域名列表
         subdomains = request.data.get('subdomains', [])
         if not subdomains or not isinstance(subdomains, list):
-            return Response(
-                {'error': '请求体不能为空或格式错误'},
-                status=status.HTTP_400_BAD_REQUEST
+            return error_response(
+                code=ErrorCodes.VALIDATION_ERROR,
+                message='Request body cannot be empty or invalid format',
+                status_code=status.HTTP_400_BAD_REQUEST
             )
         
         # 调用 service 层处理
@@ -215,20 +223,19 @@ class SubdomainViewSet(viewsets.ModelViewSet):
             )
         except Exception as e:
             logger.exception("批量创建子域名失败")
-            return Response(
-                {'error': '服务器内部错误'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            return error_response(
+                code=ErrorCodes.SERVER_ERROR,
+                message='Server internal error',
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         
-        return Response({
-            'data': {
-                'createdCount': result.created_count,
-                'skippedCount': result.skipped_count,
-                'invalidCount': result.invalid_count,
-                'mismatchedCount': result.mismatched_count,
-                'totalReceived': result.total_received,
-            }
-        }, status=status.HTTP_200_OK)
+        return success_response(data={
+            'createdCount': result.created_count,
+            'skippedCount': result.skipped_count,
+            'invalidCount': result.invalid_count,
+            'mismatchedCount': result.mismatched_count,
+            'totalReceived': result.total_received,
+        })
 
     @action(detail=False, methods=['get'], url_path='export')
     def export(self, request, **kwargs):
@@ -310,26 +317,29 @@ class WebSiteViewSet(viewsets.ModelViewSet):
         
         target_pk = self.kwargs.get('target_pk')
         if not target_pk:
-            return Response(
-                {'error': '必须在目标下批量创建网站'},
-                status=status.HTTP_400_BAD_REQUEST
+            return error_response(
+                code=ErrorCodes.VALIDATION_ERROR,
+                message='Must create websites under a target',
+                status_code=status.HTTP_400_BAD_REQUEST
             )
         
         # 获取目标
         try:
             target = Target.objects.get(pk=target_pk)
         except Target.DoesNotExist:
-            return Response(
-                {'error': '目标不存在'},
-                status=status.HTTP_404_NOT_FOUND
+            return error_response(
+                code=ErrorCodes.NOT_FOUND,
+                message='Target not found',
+                status_code=status.HTTP_404_NOT_FOUND
             )
         
         # 获取请求体中的 URL 列表
         urls = request.data.get('urls', [])
         if not urls or not isinstance(urls, list):
-            return Response(
-                {'error': '请求体不能为空或格式错误'},
-                status=status.HTTP_400_BAD_REQUEST
+            return error_response(
+                code=ErrorCodes.VALIDATION_ERROR,
+                message='Request body cannot be empty or invalid format',
+                status_code=status.HTTP_400_BAD_REQUEST
             )
         
         # 调用 service 层处理
@@ -342,16 +352,15 @@ class WebSiteViewSet(viewsets.ModelViewSet):
             )
         except Exception as e:
             logger.exception("批量创建网站失败")
-            return Response(
-                {'error': '服务器内部错误'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            return error_response(
+                code=ErrorCodes.SERVER_ERROR,
+                message='Server internal error',
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         
-        return Response({
-            'data': {
-                'createdCount': created_count,
-            }
-        }, status=status.HTTP_200_OK)
+        return success_response(data={
+            'createdCount': created_count,
+        })
 
     @action(detail=False, methods=['get'], url_path='export')
     def export(self, request, **kwargs):
@@ -438,26 +447,29 @@ class DirectoryViewSet(viewsets.ModelViewSet):
         
         target_pk = self.kwargs.get('target_pk')
         if not target_pk:
-            return Response(
-                {'error': '必须在目标下批量创建目录'},
-                status=status.HTTP_400_BAD_REQUEST
+            return error_response(
+                code=ErrorCodes.VALIDATION_ERROR,
+                message='Must create directories under a target',
+                status_code=status.HTTP_400_BAD_REQUEST
             )
         
         # 获取目标
         try:
             target = Target.objects.get(pk=target_pk)
         except Target.DoesNotExist:
-            return Response(
-                {'error': '目标不存在'},
-                status=status.HTTP_404_NOT_FOUND
+            return error_response(
+                code=ErrorCodes.NOT_FOUND,
+                message='Target not found',
+                status_code=status.HTTP_404_NOT_FOUND
             )
         
         # 获取请求体中的 URL 列表
         urls = request.data.get('urls', [])
         if not urls or not isinstance(urls, list):
-            return Response(
-                {'error': '请求体不能为空或格式错误'},
-                status=status.HTTP_400_BAD_REQUEST
+            return error_response(
+                code=ErrorCodes.VALIDATION_ERROR,
+                message='Request body cannot be empty or invalid format',
+                status_code=status.HTTP_400_BAD_REQUEST
             )
         
         # 调用 service 层处理
@@ -470,16 +482,15 @@ class DirectoryViewSet(viewsets.ModelViewSet):
             )
         except Exception as e:
             logger.exception("批量创建目录失败")
-            return Response(
-                {'error': '服务器内部错误'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            return error_response(
+                code=ErrorCodes.SERVER_ERROR,
+                message='Server internal error',
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         
-        return Response({
-            'data': {
-                'createdCount': created_count,
-            }
-        }, status=status.HTTP_200_OK)
+        return success_response(data={
+            'createdCount': created_count,
+        })
 
     @action(detail=False, methods=['get'], url_path='export')
     def export(self, request, **kwargs):
@@ -566,26 +577,29 @@ class EndpointViewSet(viewsets.ModelViewSet):
         
         target_pk = self.kwargs.get('target_pk')
         if not target_pk:
-            return Response(
-                {'error': '必须在目标下批量创建端点'},
-                status=status.HTTP_400_BAD_REQUEST
+            return error_response(
+                code=ErrorCodes.VALIDATION_ERROR,
+                message='Must create endpoints under a target',
+                status_code=status.HTTP_400_BAD_REQUEST
             )
         
         # 获取目标
         try:
             target = Target.objects.get(pk=target_pk)
         except Target.DoesNotExist:
-            return Response(
-                {'error': '目标不存在'},
-                status=status.HTTP_404_NOT_FOUND
+            return error_response(
+                code=ErrorCodes.NOT_FOUND,
+                message='Target not found',
+                status_code=status.HTTP_404_NOT_FOUND
             )
         
         # 获取请求体中的 URL 列表
         urls = request.data.get('urls', [])
         if not urls or not isinstance(urls, list):
-            return Response(
-                {'error': '请求体不能为空或格式错误'},
-                status=status.HTTP_400_BAD_REQUEST
+            return error_response(
+                code=ErrorCodes.VALIDATION_ERROR,
+                message='Request body cannot be empty or invalid format',
+                status_code=status.HTTP_400_BAD_REQUEST
             )
         
         # 调用 service 层处理
@@ -598,16 +612,15 @@ class EndpointViewSet(viewsets.ModelViewSet):
             )
         except Exception as e:
             logger.exception("批量创建端点失败")
-            return Response(
-                {'error': '服务器内部错误'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            return error_response(
+                code=ErrorCodes.SERVER_ERROR,
+                message='Server internal error',
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         
-        return Response({
-            'data': {
-                'createdCount': created_count,
-            }
-        }, status=status.HTTP_200_OK)
+        return success_response(data={
+            'createdCount': created_count,
+        })
 
     @action(detail=False, methods=['get'], url_path='export')
     def export(self, request, **kwargs):

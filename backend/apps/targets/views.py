@@ -10,6 +10,7 @@ from .serializers import OrganizationSerializer, TargetSerializer, TargetDetailS
 from .services.target_service import TargetService
 from .services.organization_service import OrganizationService
 from apps.common.pagination import BasePagination
+from apps.common.response_helpers import success_response
 
 logger = logging.getLogger(__name__)
 
@@ -94,10 +95,8 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             # 批量解除关联（直接使用 ID，避免查询对象）
             organization.targets.remove(*existing_target_ids)
         
-        return Response({
-            'data': {
-                'unlinkedCount': existing_count
-            }
+        return success_response(data={
+            'unlinkedCount': existing_count
         })
     
     def destroy(self, request, *args, **kwargs):
@@ -125,14 +124,12 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             # 直接调用 Service 层的业务方法（软删除 + 分发硬删除任务）
             result = self.org_service.delete_organizations_two_phase([organization.id])
             
-            return Response({
-                'data': {
-                    'organizationId': organization.id,
-                    'organizationName': organization.name,
-                    'deletedCount': result['soft_deleted_count'],
-                    'deletedOrganizations': result['organization_names']
-                }
-            }, status=200)
+            return success_response(data={
+                'organizationId': organization.id,
+                'organizationName': organization.name,
+                'deletedCount': result['soft_deleted_count'],
+                'deletedOrganizations': result['organization_names']
+            })
         
         except Organization.DoesNotExist:
             raise NotFound('组织不存在')
@@ -183,12 +180,10 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             # 调用 Service 层的业务方法（软删除 + 分发硬删除任务）
             result = self.org_service.delete_organizations_two_phase(ids)
             
-            return Response({
-                'data': {
-                    'deletedCount': result['soft_deleted_count'],
-                    'deletedOrganizations': result['organization_names']
-                }
-            }, status=200)
+            return success_response(data={
+                'deletedCount': result['soft_deleted_count'],
+                'deletedOrganizations': result['organization_names']
+            })
         
         except ValueError as e:
             raise NotFound(str(e))
@@ -274,13 +269,11 @@ class TargetViewSet(viewsets.ModelViewSet):
             # 直接调用 Service 层的业务方法（软删除 + 分发硬删除任务）
             result = self.target_service.delete_targets_two_phase([target.id])
             
-            return Response({
-                'data': {
-                    'targetId': target.id,
-                    'targetName': target.name,
-                    'deletedCount': result['soft_deleted_count']
-                }
-            }, status=200)
+            return success_response(data={
+                'targetId': target.id,
+                'targetName': target.name,
+                'deletedCount': result['soft_deleted_count']
+            })
         
         except Target.DoesNotExist:
             raise NotFound('目标不存在')
@@ -334,12 +327,10 @@ class TargetViewSet(viewsets.ModelViewSet):
             # 调用 Service 层的业务方法（软删除 + 分发硬删除任务）
             result = self.target_service.delete_targets_two_phase(ids)
             
-            return Response({
-                'data': {
-                    'deletedCount': result['soft_deleted_count'],
-                    'deletedTargets': result['target_names']
-                }
-            }, status=200)
+            return success_response(data={
+                'deletedCount': result['soft_deleted_count'],
+                'deletedTargets': result['target_names']
+            })
         
         except ValueError as e:
             raise NotFound(str(e))
@@ -394,7 +385,7 @@ class TargetViewSet(viewsets.ModelViewSet):
             raise ValidationError(str(e))
         
         # 3. 返回响应
-        return Response(result, status=status.HTTP_201_CREATED)
+        return success_response(data=result, status_code=status.HTTP_201_CREATED)
     
     # subdomains action 已迁移到 SubdomainViewSet 嵌套路由
     # GET /api/targets/{id}/subdomains/ -> SubdomainViewSet

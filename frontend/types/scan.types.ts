@@ -96,11 +96,17 @@ export interface QuickScanRequest {
  * Quick scan response
  */
 export interface QuickScanResponse {
-  message: string
+  count: number             // Number of scan tasks created
   targetStats: {
     created: number
+    skipped: number
     failed: number
   }
+  assetStats: {
+    websites: number
+    endpoints: number
+  }
+  errors: Array<{ input: string; error: string }>
   scans: ScanTask[]
 }
 

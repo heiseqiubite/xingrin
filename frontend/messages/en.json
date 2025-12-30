@@ -1230,6 +1230,7 @@
     "scanInitiated": "Scan initiated",
     "scanInitiatedDesc": "Successfully created {count} scan tasks",
     "initiateScanFailed": "Failed to initiate scan",
+    "noScansCreated": "No scan tasks were created",
     "unknownError": "Unknown error",
     "engineNameRequired": "Please enter engine name",
     "configRequired": "Configuration content is required",

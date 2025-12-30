@@ -13,15 +13,15 @@ from rest_framework.response import Response
 
 def success_response(
     data: Optional[Union[Dict[str, Any], List[Any]]] = None,
-    meta: Optional[Dict[str, Any]] = None,
     status_code: int = status.HTTP_200_OK
 ) -> Response:
     """
     标准化成功响应
     
+    直接返回数据，不做包装，符合 Stripe/GitHub 等大厂标准。
+    
     Args:
         data: 响应数据（dict 或 list）
-        meta: 元数据（如 count、total、page）
         status_code: HTTP 状态码，默认 200
     
     Returns:
@@ -30,24 +30,16 @@ def success_response(
     Examples:
         # 单个资源
         >>> success_response(data={'id': 1, 'name': 'Test'})
-        {'data': {'id': 1, 'name': 'Test'}}
+        {'id': 1, 'name': 'Test'}
         
-        # 列表资源带分页
-        >>> success_response(data=[...], meta={'total': 100, 'page': 1})
-        {'data': [...], 'meta': {'total': 100, 'page': 1}}
+        # 操作结果
+        >>> success_response(data={'count': 3, 'scans': [...]})
+        {'count': 3, 'scans': [...]}
         
         # 创建资源
         >>> success_response(data={'id': 1}, status_code=201)
     """
-    response_body: Dict[str, Any] = {}
-    
-    if data is not None:
-        response_body['data'] = data
-    
-    if meta is not None:
-        response_body['meta'] = meta
-    
-    return Response(response_body, status=status_code)
+    return Response(data or {}, status=status_code)
 
 
 def error_response(

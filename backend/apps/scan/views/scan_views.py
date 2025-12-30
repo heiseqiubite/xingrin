@@ -166,6 +166,19 @@ class ScanViewSet(viewsets.ModelViewSet):
                 engine=engine
             )
             
+            # 检查是否成功创建扫描任务
+            if not created_scans:
+                return error_response(
+                    code=ErrorCodes.VALIDATION_ERROR,
+                    message='No scan tasks were created. All targets may already have active scans.',
+                    details={
+                        'targetStats': result['target_stats'],
+                        'assetStats': result['asset_stats'],
+                        'errors': result.get('errors', [])
+                    },
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+                )
+            
             # 序列化返回结果
             scan_serializer = ScanSerializer(created_scans, many=True)
             
@@ -227,6 +240,14 @@ class ScanViewSet(viewsets.ModelViewSet):
                 targets=targets,
                 engine=engine
             )
+            
+            # 检查是否成功创建扫描任务
+            if not created_scans:
+                return error_response(
+                    code=ErrorCodes.VALIDATION_ERROR,
+                    message='No scan tasks were created. All targets may already have active scans.',
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+                )
             
             # 序列化返回结果
             scan_serializer = ScanSerializer(created_scans, many=True)

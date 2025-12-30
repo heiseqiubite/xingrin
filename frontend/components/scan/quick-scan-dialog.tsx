@@ -108,20 +108,16 @@ export function QuickScanDialog({ trigger }: QuickScanDialogProps) {
         engineId: Number(selectedEngineId),
       })
       
-      const { targetStats, scans } = response
+      // 后端返回 201 说明成功创建扫描任务
+      const { targetStats, scans, count } = response
+      const scanCount = scans?.length || count || 0
       
-      if (scans.length > 0) {
-        toast.success(response.message || t("toast.createSuccess", { count: scans.length }), {
-          description: targetStats.failed > 0 
-            ? t("toast.createSuccessDesc", { created: targetStats.created, failed: targetStats.failed })
-            : undefined
-        })
-        handleClose(false)
-      } else {
-        toast.error(t("toast.createFailed"), {
-          description: targetStats.failed > 0 ? t("toast.targetsFailed", { count: targetStats.failed }) : undefined
-        })
-      }
+      toast.success(t("toast.createSuccess", { count: scanCount }), {
+        description: targetStats.failed > 0 
+          ? t("toast.createSuccessDesc", { created: targetStats.created, failed: targetStats.failed })
+          : undefined
+      })
+      handleClose(false)
     } catch (error: any) {
       toast.error(error?.response?.data?.detail || error?.response?.data?.error || t("toast.createFailed"))
     } finally {

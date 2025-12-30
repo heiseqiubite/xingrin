@@ -350,13 +350,11 @@ export function useBatchDeleteCommands() {
       
       // Simulate deletion (won't actually delete mock data)
       return {
-        data: {
-          deletedCount: deletedCount
-        }
+        deletedCount: deletedCount
       }
     },
     onSuccess: (response) => {
-      toastMessages.success('toast.command.delete.bulkSuccess', { count: response.data?.deletedCount || 0 })
+      toastMessages.success('toast.command.delete.bulkSuccess', { count: response.deletedCount || 0 })
       queryClient.invalidateQueries({ queryKey: ["commands"] })
     },
     onError: (error: any) => {

@@ -1,5 +1,28 @@
 // Common API response types
-export interface ApiResponse<T = any> {
+//
+// 新响应格式：
+// - 成功响应：直接返回数据 T（无包装）
+// - 分页响应：{ results: T[], total, page, pageSize, totalPages }
+// - 错误响应：{ error: { code, message?, details? } }
+//
+// 注意：旧的 { code, state, message, data } 格式已废弃
+
+/**
+ * 错误响应类型
+ */
+export interface ApiErrorResponse {
+  error: {
+    code: string;
+    message?: string;
+    details?: unknown[];
+  };
+}
+
+/**
+ * 旧版 API 响应类型（已废弃，仅保留以向后兼容）
+ * @deprecated 请直接使用数据类型 T，后端不再使用此包装格式
+ */
+export interface LegacyApiResponse<T = unknown> {
   code: string;          // HTTP status code, e.g. "200", "400", "500"
   state: string;         // Business state, e.g. "success", "error"
   message: string;       // Response message

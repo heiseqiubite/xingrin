@@ -75,8 +75,11 @@ export function InitiateScanDialog({
         targetId,
         engineId: Number(selectedEngineId),
       })
+      
+      // 后端返回 201 说明成功创建扫描任务
+      const scanCount = response.scans?.length || response.count || 0
       toast.success(tToast("scanInitiated"), {
-        description: response.message || tToast("scanInitiatedDesc", { count: response.count }),
+        description: response.message || tToast("scanInitiatedDesc", { count: scanCount }),
       })
       onSuccess?.()
       onOpenChange(false)
