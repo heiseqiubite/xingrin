@@ -178,19 +178,9 @@
       "switchColor": "Switch theme color"
     },
     "download": {
-      "allIpAddresses": "Download All IP Addresses",
-      "selectedIpAddresses": "Download Selected IP Addresses",
-      "allSubdomains": "Download All Subdomains",
-      "selectedSubdomains": "Download Selected Subdomains",
-      "importantSubdomains": "Download Important Subdomains",
-      "allVulnerabilities": "Download All Vulnerabilities",
-      "selectedVulnerabilities": "Download Selected Vulnerabilities",
-      "allWebsites": "Download All Websites",
-      "selectedWebsites": "Download Selected Websites",
-      "allDirectories": "Download All Directories",
-      "selectedDirectories": "Download Selected Directories",
-      "allEndpoints": "Download All Endpoints",
-      "selectedEndpoints": "Download Selected Endpoints"
+      "all": "Download All",
+      "selected": "Download Selected",
+      "important": "Download Important"
     },
     "ui": {
       "toggleSidebar": "Toggle Sidebar",
@@ -465,9 +455,12 @@
     "title": "Organization Management",
     "name": "Organization Name",
     "description": "Description",
+    "addOrganization": "Add Organization",
     "createOrganization": "Create Organization",
     "editOrganization": "Edit Organization",
     "deleteOrganization": "Delete Organization",
+    "searchPlaceholder": "Search organization name...",
+    "noResults": "No organizations",
     "targetCount": "Target Count",
     "notFound": "Organization Not Found",
     "notFoundDesc": "Organization with ID {id} not found",
@@ -527,6 +520,7 @@
     "name": "Target Name",
     "domain": "Domain",
     "description": "Description",
+    "addTarget": "Add Target",
     "createTarget": "Create Target",
     "editTarget": "Edit Target",
     "deleteTarget": "Delete Target",

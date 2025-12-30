@@ -1,112 +1,112 @@
 {
   "columns": {
     "common": {
-      "name": "名称",
-      "description": "描述",
-      "createdAt": "创建时间",
-      "updatedAt": "更新时间",
-      "status": "状态",
-      "actions": "操作",
-      "type": "类型",
+      "name": "Name",
+      "description": "Description",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "status": "Status",
+      "actions": "Actions",
+      "type": "Type",
       "url": "URL"
     },
     "scanHistory": {
-      "target": "目标",
-      "summary": "摘要",
-      "engineName": "扫描引擎",
-      "progress": "进度",
-      "subdomains": "子域名",
-      "websites": "网站",
-      "ipAddresses": "IP 地址",
-      "endpoints": "端点",
-      "vulnerabilities": "漏洞"
+      "target": "Target",
+      "summary": "Summary",
+      "engineName": "Engine Name",
+      "progress": "Progress",
+      "subdomains": "Subdomains",
+      "websites": "Websites",
+      "ipAddresses": "IP Addresses",
+      "endpoints": "Endpoints",
+      "vulnerabilities": "Vulnerabilities"
     },
     "vulnerability": {
-      "severity": "严重程度",
-      "source": "来源",
-      "vulnType": "漏洞类型"
+      "severity": "Severity",
+      "source": "Source",
+      "vulnType": "Vuln Type"
     },
     "organization": {
-      "organization": "组织",
-      "totalTargets": "目标数量",
-      "added": "添加时间"
+      "organization": "Organization",
+      "totalTargets": "Total Targets",
+      "added": "Added"
     },
     "target": {
-      "target": "目标",
-      "addedOn": "添加时间",
-      "lastScanned": "最后扫描"
+      "target": "Target",
+      "addedOn": "Added On",
+      "lastScanned": "Last Scanned"
     },
     "subdomain": {
-      "subdomain": "子域名"
+      "subdomain": "Subdomain"
     },
     "ipAddress": {
-      "ipAddress": "IP 地址",
-      "hosts": "主机",
-      "openPorts": "开放端口",
-      "allHosts": "所有主机",
-      "allOpenPorts": "所有开放端口"
+      "ipAddress": "IP Address",
+      "hosts": "Hosts",
+      "openPorts": "Open Ports",
+      "allHosts": "All Hosts",
+      "allOpenPorts": "All Open Ports"
     },
     "endpoint": {
-      "title": "标题",
-      "contentLength": "内容长度",
-      "location": "位置",
-      "webServer": "Web 服务器",
-      "contentType": "内容类型",
-      "technologies": "技术栈",
-      "bodyPreview": "内容预览",
-      "vhost": "虚拟主机",
-      "gfPatterns": "GF 模式",
-      "responseTime": "响应时间"
+      "title": "Title",
+      "contentLength": "Content Length",
+      "location": "Location",
+      "webServer": "Web Server",
+      "contentType": "Content Type",
+      "technologies": "Technologies",
+      "bodyPreview": "Body Preview",
+      "vhost": "VHost",
+      "gfPatterns": "GF Patterns",
+      "responseTime": "Response Time"
     },
     "website": {
-      "host": "主机"
+      "host": "Host"
     },
     "directory": {
-      "length": "长度",
-      "words": "单词数",
-      "lines": "行数",
-      "duration": "耗时"
+      "length": "Length",
+      "words": "Words",
+      "lines": "Lines",
+      "duration": "Duration"
     },
     "engine": {
-      "engineName": "引擎名称",
-      "subdomainDiscovery": "子域名发现",
-      "portScan": "端口扫描",
-      "siteScan": "站点扫描",
-      "directoryScan": "目录扫描",
-      "urlFetch": "URL 抓取",
+      "engineName": "Engine Name",
+      "subdomainDiscovery": "Subdomain Discovery",
+      "portScan": "Port Scan",
+      "siteScan": "Site Scan",
+      "directoryScan": "Directory Scan",
+      "urlFetch": "URL Fetch",
       "osint": "OSINT",
-      "vulnerabilityScan": "漏洞扫描",
-      "wafDetection": "WAF 检测",
-      "screenshot": "截图"
+      "vulnerabilityScan": "Vulnerability Scan",
+      "wafDetection": "WAF Detection",
+      "screenshot": "Screenshot"
     },
     "scheduledScan": {
-      "taskName": "任务名称",
-      "scanEngine": "扫描引擎",
-      "cronExpression": "Cron 表达式",
-      "scope": "扫描范围",
-      "nextRun": "下次执行",
-      "runCount": "执行次数",
-      "lastRun": "上次执行"
+      "taskName": "Task Name",
+      "scanEngine": "Scan Engine",
+      "cronExpression": "Cron Expression",
+      "scope": "Scope",
+      "nextRun": "Next Run",
+      "runCount": "Run Count",
+      "lastRun": "Last Run"
     },
     "fingerprint": {
-      "name": "名称",
-      "cats": "分类",
-      "rules": "规则",
-      "implies": "依赖",
-      "website": "官网",
+      "name": "Name",
+      "cats": "Categories",
+      "rules": "Rules",
+      "implies": "Implies",
+      "website": "Website",
       "cpe": "CPE",
-      "created": "创建时间",
-      "logic": "逻辑",
-      "ruleDetails": "规则详情",
+      "created": "Created",
+      "logic": "Logic",
+      "ruleDetails": "Rule Details",
       "cms": "CMS",
-      "method": "匹配方式",
-      "keyword": "关键词",
-      "type": "类型",
-      "important": "重点资产"
+      "method": "Method",
+      "keyword": "Keyword",
+      "type": "Type",
+      "important": "Important"
     },
     "command": {
-      "tool": "所属工具",
-      "commandTemplate": "命令模板"
+      "tool": "Tool",
+      "commandTemplate": "Command Template"
     }
   },
   "tooltips": {
@@ -178,19 +178,9 @@
       "switchColor": "切换主题色"
     },
     "download": {
-      "allIpAddresses": "下载全部 IP 地址",
-      "selectedIpAddresses": "下载选中 IP 地址",
-      "allSubdomains": "下载全部子域名",
-      "selectedSubdomains": "下载选中子域名",
-      "importantSubdomains": "下载重点子域名",
-      "allVulnerabilities": "下载全部漏洞",
-      "selectedVulnerabilities": "下载选中漏洞",
-      "allWebsites": "下载全部网站",
-      "selectedWebsites": "下载选中网站",
-      "allDirectories": "下载全部目录",
-      "selectedDirectories": "下载选中目录",
-      "allEndpoints": "下载全部端点",
-      "selectedEndpoints": "下载选中端点"
+      "all": "下载全部",
+      "selected": "下载选中",
+      "important": "下载重点"
     },
     "ui": {
       "toggleSidebar": "切换侧边栏",
@@ -465,9 +455,12 @@
     "title": "组织管理",
     "name": "组织名称",
     "description": "描述",
+    "addOrganization": "添加组织",
     "createOrganization": "创建组织",
     "editOrganization": "编辑组织",
     "deleteOrganization": "删除组织",
+    "searchPlaceholder": "搜索组织名称...",
+    "noResults": "暂无组织",
     "targetCount": "目标数量",
     "notFound": "组织不存在",
     "notFoundDesc": "未找到ID为 {id} 的组织",
@@ -527,6 +520,7 @@
     "name": "目标名称",
     "domain": "域名",
     "description": "描述",
+    "addTarget": "添加目标",
     "createTarget": "创建目标",
     "editTarget": "编辑目标",
     "deleteTarget": "删除目标",

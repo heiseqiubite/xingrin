@@ -208,7 +208,7 @@ export function createEndpointColumns({
         return (
           <ExpandableTagList
             items={tech}
-            maxVisible={3}
+            maxLines={2}
             variant="outline"
           />
         )
@@ -255,7 +255,7 @@ export function createEndpointColumns({
         return (
           <ExpandableTagList
             items={patterns}
-            maxVisible={3}
+            maxLines={2}
             variant="secondary"
           />
         )

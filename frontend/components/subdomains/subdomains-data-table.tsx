@@ -84,14 +84,14 @@ export function SubdomainsDataTable({
   if (onDownloadAll) {
     downloadOptions.push({
       key: "all",
-      label: tDownload("allSubdomains"),
+      label: tDownload("all"),
       onClick: onDownloadAll,
     })
   }
   if (onDownloadSelected) {
     downloadOptions.push({
       key: "selected",
-      label: tDownload("selectedSubdomains"),
+      label: tDownload("selected"),
       onClick: onDownloadSelected,
       disabled: (count) => count === 0,
     })
@@ -99,7 +99,7 @@ export function SubdomainsDataTable({
   if (onDownloadImportant) {
     downloadOptions.push({
       key: "important",
-      label: tDownload("importantSubdomains"),
+      label: tDownload("important"),
       onClick: onDownloadImportant,
     })
   }

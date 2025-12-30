@@ -116,7 +116,7 @@ export function TargetsDataTable({
       // Add button
       onAddNew={onAddNew}
       onAddHover={onAddHover}
-      addButtonLabel={addButtonText || tTarget("createTarget")}
+      addButtonLabel={addButtonText || tTarget("addTarget")}
       showAddButton={!!onAddNew}
       // Empty state
       emptyMessage={t("noData")}

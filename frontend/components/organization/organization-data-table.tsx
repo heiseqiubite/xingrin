@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslations } from "next-intl"
 import { IconSearch, IconLoader2 } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,7 +14,7 @@ export function OrganizationDataTable({
   onAddNew,
   onBulkDelete,
   onSelectionChange,
-  searchPlaceholder = "搜索组织名称...",
+  searchPlaceholder,
   searchColumn = "name",
   searchValue,
   onSearch,
@@ -22,6 +23,8 @@ export function OrganizationDataTable({
   paginationInfo,
   onPaginationChange,
 }: OrganizationDataTableProps) {
+  const t = useTranslations("organization")
+  const tActions = useTranslations("common.actions")
   // 本地搜索输入状态（只在回车或点击按钮时触发搜索）
   const [localSearchValue, setLocalSearchValue] = React.useState(searchValue ?? "")
   
@@ -57,18 +60,18 @@ export function OrganizationDataTable({
       onSelectionChange={onSelectionChange}
       // 批量操作
       onBulkDelete={onBulkDelete}
-      bulkDeleteLabel="Delete"
+      bulkDeleteLabel={tActions("delete")}
       onAddNew={onAddNew}
-      addButtonLabel="Add Organization"
+      addButtonLabel={t("addOrganization")}
       // 排序
       defaultSorting={defaultSorting}
       // 空状态
-      emptyMessage="No results"
+      emptyMessage={t("noResults")}
       // 自定义搜索框
       toolbarLeft={
         <div className="flex items-center space-x-2">
           <Input
-            placeholder={searchPlaceholder}
+            placeholder={searchPlaceholder ?? t("searchPlaceholder")}
             value={localSearchValue}
             onChange={(e) => setLocalSearchValue(e.target.value)}
             onKeyDown={handleKeyDown}

@@ -397,7 +397,7 @@ export function ScanHistoryList({ hideToolbar = false }: ScanHistoryListProps) {
             <AlertDialogCancel>{tCommon("actions.cancel")}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmStop} 
-              className="bg-chart-2 text-white hover:bg-chart-2/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {tConfirm("stopScanAction")}
             </AlertDialogAction>

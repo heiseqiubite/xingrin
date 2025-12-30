@@ -5,6 +5,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { DataTableColumnHeader } from "@/components/ui/data-table/column-header"
+import { ChevronDown, ChevronUp } from "lucide-react"
 import type { EholeFingerprint } from "@/types/fingerprint.types"
 
 // Translation type definitions
@@ -54,9 +55,19 @@ function KeywordListCell({ keywords, t }: { keywords: string[]; t: EholeFingerpr
       {hasMore && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="text-xs text-primary hover:underline self-start"
+          className="text-xs text-primary hover:underline self-start flex items-center gap-1"
         >
-          {expanded ? t.actions.collapse : t.actions.expand}
+          {expanded ? (
+            <>
+              <ChevronUp className="h-3 w-3" />
+              {t.actions.collapse}
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-3 w-3" />
+              {t.actions.expand}
+            </>
+          )}
         </button>
       )}
     </div>

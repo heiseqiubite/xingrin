@@ -348,6 +348,12 @@ TASK_SUBMIT_INTERVAL = int(os.getenv('TASK_SUBMIT_INTERVAL', '6'))
 # 本地 Worker Docker 网络名称（与 docker-compose.yml 中定义的一致）
 DOCKER_NETWORK_NAME = os.getenv('DOCKER_NETWORK_NAME', 'xingrin_network')
 
+# Docker API 版本配置（防止客户端与服务端版本不匹配）
+# API 1.40 支持 Docker 19.03+ (2019年至今)，具有最大兼容性
+# 如果所有 worker 节点都是 Docker 20.10+，可设置为 1.41
+# 查看 worker 节点的 API 版本：ssh user@worker "docker version --format '{{.Server.APIVersion}}'"
+DOCKER_API_VERSION = os.getenv('DOCKER_API_VERSION', '1.40')
+
 # 宿主机挂载源路径（所有节点统一使用固定路径）
 # 部署前需创建：mkdir -p /opt/xingrin
 HOST_RESULTS_DIR = '/opt/xingrin/results'

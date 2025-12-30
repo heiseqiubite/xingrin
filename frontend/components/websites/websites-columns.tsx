@@ -141,7 +141,7 @@ export function createWebSiteColumns({
       minSize: 150,
       cell: ({ row }) => {
         const tech = row.getValue("tech") as string[]
-        return <ExpandableTagList items={tech} maxVisible={3} variant="outline" />
+        return <ExpandableTagList items={tech} maxLines={2} variant="outline" />
       },
     },
     {

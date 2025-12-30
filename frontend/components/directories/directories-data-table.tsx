@@ -80,14 +80,14 @@ export function DirectoriesDataTable({
   if (onDownloadAll) {
     downloadOptions.push({
       key: "all",
-      label: tDownload("allDirectories"),
+      label: tDownload("all"),
       onClick: onDownloadAll,
     })
   }
   if (onDownloadSelected) {
     downloadOptions.push({
       key: "selected",
-      label: tDownload("selectedDirectories"),
+      label: tDownload("selected"),
       onClick: onDownloadSelected,
       disabled: (count) => count === 0,
     })

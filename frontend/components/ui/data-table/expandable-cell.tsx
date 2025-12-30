@@ -5,6 +5,51 @@ import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { ChevronDown, ChevronUp } from "lucide-react"
 
+// ============================================================================
+// i18n Context for expandable components
+// ============================================================================
+
+interface ExpandableI18n {
+  expand: string
+  collapse: string
+}
+
+const defaultI18n: ExpandableI18n = {
+  expand: "Expand",
+  collapse: "Collapse",
+}
+
+const ExpandableI18nContext = React.createContext<ExpandableI18n>(defaultI18n)
+
+/**
+ * Provider for expandable component i18n
+ * Wrap your table or page with this to provide translations
+ */
+export function ExpandableI18nProvider({
+  children,
+  expand,
+  collapse,
+}: {
+  children: React.ReactNode
+  expand: string
+  collapse: string
+}) {
+  const value = React.useMemo(() => ({ expand, collapse }), [expand, collapse])
+  return (
+    <ExpandableI18nContext.Provider value={value}>
+      {children}
+    </ExpandableI18nContext.Provider>
+  )
+}
+
+function useExpandableI18n() {
+  return React.useContext(ExpandableI18nContext)
+}
+
+// ============================================================================
+// ExpandableCell component
+// ============================================================================
+
 export interface ExpandableCellProps {
   /** Value to display */
   value: string | null | undefined
@@ -16,9 +61,9 @@ export interface ExpandableCellProps {
   className?: string
   /** Placeholder when value is empty */
   placeholder?: string
-  /** Expand button text */
+  /** Expand button text (overrides context) */
   expandLabel?: string
-  /** Collapse button text */
+  /** Collapse button text (overrides context) */
   collapseLabel?: string
 }
 
@@ -37,12 +82,16 @@ export function ExpandableCell({
   maxLines = 3,
   className,
   placeholder = "-",
-  expandLabel = "Expand",
-  collapseLabel = "Collapse",
+  expandLabel,
+  collapseLabel,
 }: ExpandableCellProps) {
+  const i18n = useExpandableI18n()
   const [expanded, setExpanded] = React.useState(false)
   const [isOverflowing, setIsOverflowing] = React.useState(false)
   const contentRef = React.useRef<HTMLDivElement>(null)
+
+  const expand = expandLabel ?? i18n.expand
+  const collapse = collapseLabel ?? i18n.collapse
 
   // Detect content overflow
   React.useEffect(() => {
@@ -94,9 +143,19 @@ export function ExpandableCell({
       {(isOverflowing || expanded) && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="text-xs text-primary hover:underline self-start"
+          className="inline-flex items-center gap-0.5 text-xs text-primary hover:underline self-start"
         >
-          {expanded ? collapseLabel : expandLabel}
+          {expanded ? (
+            <>
+              <ChevronUp className="h-3 w-3" />
+              <span>{collapse}</span>
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-3 w-3" />
+              <span>{expand}</span>
+            </>
+          )}
         </button>
       )}
     </div>
@@ -158,6 +217,7 @@ export function ExpandableBadgeList({
   className,
   onItemClick,
 }: ExpandableBadgeListProps) {
+  const i18n = useExpandableI18n()
   const [expanded, setExpanded] = React.useState(false)
 
   if (!items || items.length === 0) {
@@ -166,7 +226,6 @@ export function ExpandableBadgeList({
 
   const hasMore = items.length > maxVisible
   const displayItems = expanded ? items : items.slice(0, maxVisible)
-  const remainingCount = items.length - maxVisible
 
   return (
     <div className={cn("flex flex-wrap items-center gap-1", className)}>
@@ -192,12 +251,12 @@ export function ExpandableBadgeList({
           {expanded ? (
             <>
               <ChevronUp className="h-3 w-3" />
-              <span>Collapse</span>
+              <span>{i18n.collapse}</span>
             </>
           ) : (
             <>
-              <span>Expand</span>
               <ChevronDown className="h-3 w-3" />
+              <span>{i18n.expand}</span>
             </>
           )}
         </button>
@@ -213,8 +272,8 @@ export function ExpandableBadgeList({
 export interface ExpandableTagListProps {
   /** Tag list */
   items: string[] | null | undefined
-  /** Default display count, default 3 */
-  maxVisible?: number
+  /** Maximum display lines, default 2 */
+  maxLines?: number
   /** Badge variant */
   variant?: "default" | "secondary" | "outline" | "destructive"
   /** Placeholder when value is empty */
@@ -226,51 +285,87 @@ export interface ExpandableTagListProps {
 /**
  * Expandable tag list component (for string arrays)
  * 
- * Suitable for tech lists, tags lists and other scenarios
+ * Features:
+ * - Auto-detect overflow based on line count
+ * - Responsive: shows more tags when container is wider
+ * - Show expand/collapse button only when content overflows
  */
 export function ExpandableTagList({
   items,
-  maxVisible = 3,
+  maxLines = 2,
   variant = "outline",
   placeholder = "-",
   className,
 }: ExpandableTagListProps) {
+  const i18n = useExpandableI18n()
   const [expanded, setExpanded] = React.useState(false)
+  const [isOverflowing, setIsOverflowing] = React.useState(false)
+  const containerRef = React.useRef<HTMLDivElement>(null)
+
+  // Detect content overflow
+  React.useEffect(() => {
+    const el = containerRef.current
+    if (!el || expanded) return
+
+    const checkOverflow = () => {
+      setIsOverflowing(el.scrollHeight > el.clientHeight + 1)
+    }
+
+    checkOverflow()
+
+    const resizeObserver = new ResizeObserver(checkOverflow)
+    resizeObserver.observe(el)
+
+    return () => resizeObserver.disconnect()
+  }, [items, expanded])
 
   if (!items || items.length === 0) {
     return <span className="text-sm text-muted-foreground">{placeholder}</span>
   }
 
-  const hasMore = items.length > maxVisible
-  const displayItems = expanded ? items : items.slice(0, maxVisible)
-  const remainingCount = items.length - maxVisible
+  // Line clamp class based on maxLines
+  const lineClampClass = {
+    1: "line-clamp-1",
+    2: "line-clamp-2",
+    3: "line-clamp-3",
+    4: "line-clamp-4",
+  }[maxLines] || "line-clamp-2"
 
   return (
-    <div className={cn("flex flex-wrap items-center gap-1", className)}>
-      {displayItems.map((item, index) => (
-        <Badge
-          key={`${item}-${index}`}
-          variant={variant}
-          className="text-xs"
-          title={item}
-        >
-          {item}
-        </Badge>
-      ))}
-      {hasMore && (
+    <div className="flex flex-col gap-1">
+      <div
+        ref={containerRef}
+        className={cn(
+          "flex flex-wrap items-start gap-1",
+          !expanded && lineClampClass,
+          className
+        )}
+      >
+        {items.map((item, index) => (
+          <Badge
+            key={`${item}-${index}`}
+            variant={variant}
+            className="text-xs"
+            title={item}
+          >
+            {item}
+          </Badge>
+        ))}
+      </div>
+      {(isOverflowing || expanded) && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="inline-flex items-center gap-0.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-0.5 text-xs text-muted-foreground hover:text-foreground transition-colors self-start"
         >
           {expanded ? (
             <>
               <ChevronUp className="h-3 w-3" />
-              <span>Collapse</span>
+              <span>{i18n.collapse}</span>
             </>
           ) : (
             <>
-              <span>Expand</span>
               <ChevronDown className="h-3 w-3" />
+              <span>{i18n.expand}</span>
             </>
           )}
         </button>

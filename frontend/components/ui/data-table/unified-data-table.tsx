@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslations } from "next-intl"
 import {
   ColumnFiltersState,
   ColumnSizingState,
@@ -145,6 +146,8 @@ export function UnifiedDataTable<TData>({
   className,
   tableClassName,
 }: UnifiedDataTableProps<TData>) {
+  const tActions = useTranslations("common.actions")
+  
   // Internal state
   const [internalRowSelection, setInternalRowSelection] = React.useState<Record<string, boolean>>({})
   const [internalColumnVisibility, setInternalColumnVisibility] = React.useState<VisibilityState>({})
@@ -350,13 +353,11 @@ export function UnifiedDataTable<TData>({
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
             <IconDownload className="h-4 w-4" />
-            Download
+            {tActions("download")}
             <IconChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-64">
-          <DropdownMenuLabel>Download Options</DropdownMenuLabel>
-          <DropdownMenuSeparator />
+        <DropdownMenuContent align="end">
           {downloadOptions.map((option) => {
             const isDisabled = typeof option.disabled === 'function'
               ? option.disabled(selectedCount)

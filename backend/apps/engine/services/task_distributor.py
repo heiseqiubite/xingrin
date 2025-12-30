@@ -264,6 +264,10 @@ class TaskDistributor:
         """
         import shlex
         
+        # Docker API 版本配置（避免版本不兼容问题）
+        # 默认使用 1.40 以获得最大兼容性（支持 Docker 19.03+）
+        api_version = getattr(settings, 'DOCKER_API_VERSION', '1.40')
+        
         # 根据 Worker 类型确定网络和 Server 地址
         if worker.is_local:
             # 本地：加入 Docker 网络，使用内部服务名
@@ -312,10 +316,11 @@ class TaskDistributor:
         # - 远程 Worker：deploy 时已预拉取镜像，直接使用本地版本
         # - 避免每次任务都检查 Docker Hub，提升性能和稳定性
         # 使用双引号包裹 sh -c 命令，内部 shlex.quote 生成的单引号参数可正确解析
-        cmd = f'''docker run --rm -d --pull=missing {network_arg} \
-            {' '.join(env_vars)} \
-            {' '.join(volumes)} \
-            {self.docker_image} \
+        # DOCKER_API_VERSION 环境变量确保客户端和服务端 API 版本兼容
+        cmd = f'''DOCKER_API_VERSION={api_version} docker run --rm -d --pull=missing {network_arg} \\
+            {' '.join(env_vars)} \\
+            {' '.join(volumes)} \\
+            {self.docker_image} \\
             sh -c "{inner_cmd}"'''
         
         return cmd

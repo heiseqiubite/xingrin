@@ -523,7 +523,7 @@ export const createScanHistoryColumns = ({
                 <>
                   <DropdownMenuItem
                     onClick={() => handleStop(scan)}
-                    className="text-chart-2 focus:text-chart-2"
+                    className="text-primary focus:text-primary"
                   >
                     <StopCircle />
                     {t.actions.stopScan}

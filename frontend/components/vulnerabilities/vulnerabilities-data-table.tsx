@@ -69,14 +69,14 @@ export function VulnerabilitiesDataTable({
   if (onDownloadAll) {
     downloadOptions.push({
       key: "all",
-      label: tDownload("allVulnerabilities"),
+      label: tDownload("all"),
       onClick: onDownloadAll,
     })
   }
   if (onDownloadSelected) {
     downloadOptions.push({
       key: "selected",
-      label: tDownload("selectedVulnerabilities"),
+      label: tDownload("selected"),
       onClick: onDownloadSelected,
       disabled: (count) => count === 0,
     })

@@ -24,6 +24,7 @@ import { Suspense } from "react"
 import Script from "next/script"
 import { QueryProvider } from "@/components/providers/query-provider"
 import { ThemeProvider } from "@/components/providers/theme-provider"
+import { UiI18nProvider } from "@/components/providers/ui-i18n-provider"
 
 // Import common layout components
 import { RoutePrefetch } from "@/components/route-prefetch"
@@ -117,12 +118,15 @@ export default async function LocaleLayout({
           <NextIntlClientProvider messages={messages}>
             {/* QueryProvider provides React Query functionality */}
             <QueryProvider>
-              {/* Route prefetch */}
-              <RoutePrefetch />
-              {/* AuthLayout handles authentication and sidebar display */}
-              <AuthLayout>
-                {children}
-              </AuthLayout>
+              {/* UiI18nProvider provides UI component translations */}
+              <UiI18nProvider>
+                {/* Route prefetch */}
+                <RoutePrefetch />
+                {/* AuthLayout handles authentication and sidebar display */}
+                <AuthLayout>
+                  {children}
+                </AuthLayout>
+              </UiI18nProvider>
             </QueryProvider>
           </NextIntlClientProvider>
         </ThemeProvider>
