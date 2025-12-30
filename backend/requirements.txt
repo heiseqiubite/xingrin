@@ -28,6 +28,10 @@ uvicorn[standard]==0.30.1
 # SSH & 远程部署
 paramiko>=3.0.0
 
+# Docker 管理
+docker>=6.0.0  # Python Docker SDK
+packaging>=21.0  # 版本比较
+
 # 测试框架
 pytest==8.0.0
 pytest-django==4.7.0

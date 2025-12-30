@@ -39,7 +39,10 @@ def success_response(
         # 创建资源
         >>> success_response(data={'id': 1}, status_code=201)
     """
-    return Response(data or {}, status=status_code)
+    # 注意：不能使用 data or {}，因为空列表 [] 会被转换为 {}
+    if data is None:
+        data = {}
+    return Response(data, status=status_code)
 
 
 def error_response(
