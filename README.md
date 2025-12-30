@@ -211,7 +211,6 @@ sudo ./uninstall.sh
 
 - 🐛 **如果发现 Bug** 可以点击右边链接进行提交 [Issue](https://github.com/yyhuni/xingrin/issues)
 - 💡 **有新想法，比如UI设计，功能设计等** 欢迎点击右边链接进行提交建议 [Issue](https://github.com/yyhuni/xingrin/issues)
-- 🔧 **想参与开发？** 关注我公众号与我个人联系
 
 ## 📧 联系
 - 目前版本就我个人使用，可能会有很多边界问题
