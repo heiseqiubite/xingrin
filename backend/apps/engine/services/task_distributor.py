@@ -242,11 +242,13 @@ class TaskDistributor:
         Returns:
             命令列表（如 ['python', '-m', 'script', '--arg=value']）
         """
+        import shlex
+        
         # 日志文件路径（容器内）
         log_file = f"{self.logs_mount}/container_{script_module.split('.')[-1]}.log"
         
-        # 构建参数列表
-        args = [f"--{k}={v}" for k, v in script_args.items()]
+        # 构建参数列表（使用 shlex.quote 转义特殊字符）
+        args = [f"--{k}={shlex.quote(str(v))}" for k, v in script_args.items()]
         
         # 完整命令：日志轮转 + 执行脚本
         command = [
