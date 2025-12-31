@@ -49,12 +49,12 @@ export function createVulnerabilityColumns({
   t,
 }: ColumnActions): ColumnDef<Vulnerability>[] {
   // Unified vulnerability severity color configuration
-  const severityConfig: Record<VulnerabilitySeverity, { label: string; className: string }> = {
-    critical: { label: t.severity.critical, className: "bg-[#da3633]/10 text-[#da3633] border border-[#da3633]/20 dark:text-[#f85149]" },
-    high: { label: t.severity.high, className: "bg-[#d29922]/10 text-[#d29922] border border-[#d29922]/20" },
-    medium: { label: t.severity.medium, className: "bg-[#d4a72c]/10 text-[#d4a72c] border border-[#d4a72c]/20" },
-    low: { label: t.severity.low, className: "bg-[#238636]/10 text-[#238636] border border-[#238636]/20 dark:text-[#3fb950]" },
-    info: { label: t.severity.info, className: "bg-[#848d97]/10 text-[#848d97] border border-[#848d97]/20" },
+  const severityConfig: Record<VulnerabilitySeverity, { className: string }> = {
+    critical: { className: "bg-[#da3633]/10 text-[#da3633] border border-[#da3633]/20 dark:text-[#f85149]" },
+    high: { className: "bg-[#d29922]/10 text-[#d29922] border border-[#d29922]/20" },
+    medium: { className: "bg-[#d4a72c]/10 text-[#d4a72c] border border-[#d4a72c]/20" },
+    low: { className: "bg-[#238636]/10 text-[#238636] border border-[#238636]/20 dark:text-[#3fb950]" },
+    info: { className: "bg-[#848d97]/10 text-[#848d97] border border-[#848d97]/20" },
   }
 
   return [
@@ -99,7 +99,7 @@ export function createVulnerabilityColumns({
         const config = severityConfig[severity]
         return (
           <Badge className={config.className}>
-            {config.label}
+            {severity}
           </Badge>
         )
       },

@@ -37,8 +37,8 @@ import type { PaginationInfo } from "@/types/common.types"
 const WAPPALYZER_FILTER_EXAMPLES = [
   'name="WordPress"',
   'name=="React"',
-  'description="CMS"',
-  'implies="PHP"',
+  'website="wordpress.org"',
+  'cpe="wordpress"',
 ]
 
 interface WappalyzerFingerprintDataTableProps {
@@ -86,10 +86,8 @@ export function WappalyzerFingerprintDataTable({
   // Wappalyzer filter field configuration (using translations)
   const wappalyzerFilterFields: FilterField[] = React.useMemo(() => [
     { key: "name", label: "Name", description: t("filter.wappalyzer.name") },
-    { key: "description", label: "Description", description: t("filter.wappalyzer.description") },
     { key: "website", label: "Website", description: t("filter.wappalyzer.website") },
     { key: "cpe", label: "CPE", description: t("filter.wappalyzer.cpe") },
-    { key: "implies", label: "Implies", description: t("filter.wappalyzer.implies") },
   ], [t])
 
   const handleSmartSearch = (rawQuery: string) => {

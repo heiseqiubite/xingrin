@@ -36,9 +36,9 @@ import { useTranslations } from "next-intl"
 
 const FINGERS_FILTER_EXAMPLES = [
   'name="Apache"',
-  'tag="cms"',
   'focus="true"',
-  'name="nginx" tag="web"',
+  'link="http"',
+  'name="nginx" focus="true"',
 ]
 
 interface FingersFingerprintDataTableProps {
@@ -86,7 +86,6 @@ export function FingersFingerprintDataTable({
   // Fingers filter field configuration
   const fingersFilterFields: FilterField[] = React.useMemo(() => [
     { key: "name", label: "Name", description: t("filter.fingers.name") },
-    { key: "tag", label: "Tag", description: t("filter.fingers.tag") },
     { key: "focus", label: "Focus", description: t("filter.fingers.focus") },
     { key: "link", label: "Link", description: t("filter.fingers.link") },
   ], [t])

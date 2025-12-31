@@ -38,7 +38,7 @@ const FINGERPRINTHUB_FILTER_EXAMPLES = [
   'name="Apache"',
   'severity="high"',
   'author="pdteam"',
-  'tags="cms"',
+  'fpId="apache-detect"',
 ]
 
 interface FingerPrintHubFingerprintDataTableProps {
@@ -89,7 +89,6 @@ export function FingerPrintHubFingerprintDataTable({
     { key: "name", label: "Name", description: t("filter.fingerprinthub.name") },
     { key: "author", label: "Author", description: t("filter.fingerprinthub.author") },
     { key: "severity", label: "Severity", description: t("filter.fingerprinthub.severity") },
-    { key: "tags", label: "Tags", description: t("filter.fingerprinthub.tags") },
   ], [t])
 
   const handleSmartSearch = (rawQuery: string) => {

@@ -222,6 +222,9 @@ class TestDataGenerator:
             self.create_ehole_fingerprints()
             self.create_goby_fingerprints()
             self.create_wappalyzer_fingerprints()
+            self.create_fingers_fingerprints()
+            self.create_fingerprinthub_fingerprints()
+            self.create_arl_fingerprints()
             
             self.conn.commit()
             print("\n✅ 测试数据生成完成！")
@@ -238,6 +241,7 @@ class TestDataGenerator:
         tables = [
             # 指纹表
             'ehole_fingerprint', 'goby_fingerprint', 'wappalyzer_fingerprint',
+            'fingers_fingerprint', 'fingerprinthub_fingerprint', 'arl_fingerprint',
             # 快照表(先删除，因为有外键依赖 scan)
             'vulnerability_snapshot', 'host_port_mapping_snapshot', 'directory_snapshot',
             'endpoint_snapshot', 'website_snapshot', 'subdomain_snapshot',
@@ -1989,6 +1993,371 @@ class TestDataGenerator:
             """, batch_data, template="(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())")
         
         print(f"  ✓ 创建了 {count} 个 Wappalyzer 指纹\n")
+
+    def create_fingers_fingerprints(self):
+        """创建 Fingers 指纹数据"""
+        print("🔍 创建 Fingers 指纹...")
+        cur = self.conn.cursor()
+        
+        # 应用名称模板（长名称）
+        name_templates = [
+            'Apache-HTTP-Server-Web-Application-Platform-Open-Source-Software',
+            'Nginx-High-Performance-Web-Server-Reverse-Proxy-Load-Balancer',
+            'Microsoft-IIS-Internet-Information-Services-Windows-Web-Server',
+            'Tomcat-Java-Servlet-Container-Apache-Application-Server-Platform',
+            'WordPress-Content-Management-System-Blogging-Platform-PHP-MySQL',
+            'Drupal-CMS-Content-Management-Framework-PHP-Community-Platform',
+            'Joomla-Open-Source-CMS-Web-Content-Management-System-Framework',
+            'Laravel-PHP-Framework-Web-Application-Development-MVC-Pattern',
+            'Django-Python-Web-Framework-High-Level-MTV-Architecture-Pattern',
+            'Ruby-on-Rails-Web-Application-Framework-MVC-Convention-Configuration',
+            'Express-JS-Node-JS-Web-Application-Framework-Minimal-Flexible',
+            'Spring-Boot-Java-Framework-Microservices-Enterprise-Application',
+            'ASP-NET-Core-Cross-Platform-Web-Framework-Microsoft-Open-Source',
+            'React-JavaScript-Library-Building-User-Interfaces-Facebook-Meta',
+            'Vue-JS-Progressive-JavaScript-Framework-Web-Application-Development',
+            'Angular-TypeScript-Platform-Framework-Web-Applications-Google',
+            'jQuery-JavaScript-Library-DOM-Manipulation-Ajax-Event-Handling',
+            'Bootstrap-CSS-Framework-Responsive-Mobile-First-Web-Development',
+            'Tailwind-CSS-Utility-First-Framework-Rapid-UI-Development-Tool',
+            'Docker-Container-Platform-Application-Deployment-Virtualization',
+            'Kubernetes-Container-Orchestration-Platform-Cloud-Native-Apps',
+            'Redis-In-Memory-Data-Structure-Store-Database-Cache-Broker',
+            'MongoDB-Document-NoSQL-Database-Scalable-High-Performance',
+            'PostgreSQL-Relational-Database-Management-System-Open-Source',
+            'MySQL-Database-Management-System-Relational-Database-Oracle',
+            'Elasticsearch-Search-Analytics-Engine-Distributed-RESTful-API',
+            'RabbitMQ-Message-Broker-Advanced-Message-Queuing-Protocol',
+            'Jenkins-Automation-Server-Continuous-Integration-Deployment',
+            'GitLab-DevOps-Platform-Git-Repository-CI-CD-Pipeline-Management',
+            'Grafana-Observability-Platform-Metrics-Visualization-Dashboard',
+        ]
+        
+        # 标签模板
+        tag_options = [
+            ['web-server', 'http', 'apache', 'linux'],
+            ['web-server', 'reverse-proxy', 'nginx', 'high-performance'],
+            ['web-server', 'windows', 'microsoft', 'iis'],
+            ['cms', 'php', 'wordpress', 'blog', 'mysql'],
+            ['cms', 'php', 'drupal', 'content-management'],
+            ['framework', 'php', 'laravel', 'mvc', 'modern'],
+            ['framework', 'python', 'django', 'full-stack'],
+            ['framework', 'ruby', 'rails', 'mvc', 'convention'],
+            ['framework', 'javascript', 'nodejs', 'express', 'backend'],
+            ['framework', 'java', 'spring', 'enterprise', 'microservices'],
+            ['framework', 'dotnet', 'aspnet', 'microsoft', 'cross-platform'],
+            ['library', 'javascript', 'react', 'frontend', 'ui'],
+            ['framework', 'javascript', 'vue', 'progressive', 'reactive'],
+            ['framework', 'typescript', 'angular', 'google', 'spa'],
+            ['database', 'nosql', 'mongodb', 'document', 'json'],
+            ['database', 'relational', 'postgresql', 'sql', 'open-source'],
+            ['database', 'relational', 'mysql', 'sql', 'oracle'],
+            ['cache', 'database', 'redis', 'in-memory', 'key-value'],
+            ['search', 'analytics', 'elasticsearch', 'distributed', 'restful'],
+            ['container', 'docker', 'virtualization', 'deployment'],
+        ]
+        
+        # 规则模板
+        rule_templates = [
+            # favicon hash 规则
+            [{'method': 'faviconhash', 'favicon': f'-{random.randint(1000000000, 9999999999)}'}],
+            # keyword 规则
+            [{'method': 'keyword', 'keyword': ['X-Powered-By', 'Server', 'X-Generator']}],
+            # 混合规则
+            [
+                {'method': 'keyword', 'keyword': ['content="WordPress', 'wp-content/', 'wp-includes/']},
+                {'method': 'faviconhash', 'favicon': f'-{random.randint(1000000000, 9999999999)}'}
+            ],
+            # header 规则
+            [{'method': 'keyword', 'keyword': ['Server: nginx', 'X-Powered-By: PHP']}],
+            # body 规则
+            [{'method': 'keyword', 'keyword': ['<meta name="generator"', 'Powered by', 'Built with']}],
+        ]
+        
+        # 端口模板
+        port_options = [
+            [80, 443],
+            [80, 443, 8080, 8443],
+            [80, 443, 8000, 8080, 8443],
+            [3000, 3001, 5000],
+            [8080, 8081, 8888, 9000],
+            [443, 8443, 9443],
+            [],  # 空数组
+        ]
+        
+        count = 0
+        batch_data = []
+        
+        for i in range(200):  # 生成 200 条 Fingers 指纹
+            name = f'{random.choice(name_templates)}-{random.randint(1000, 9999)}'
+            link = f'https://www.example-{random.randint(1000, 9999)}.com'
+            rule = random.choice(rule_templates)
+            tag = random.choice(tag_options)
+            focus = random.choice([True, False])
+            default_port = random.choice(port_options)
+            
+            batch_data.append((
+                name, link, json.dumps(rule), json.dumps(tag), focus, json.dumps(default_port)
+            ))
+            count += 1
+        
+        if batch_data:
+            execute_values(cur, """
+                INSERT INTO fingers_fingerprint (name, link, rule, tag, focus, default_port, created_at)
+                VALUES %s
+                ON CONFLICT (name) DO NOTHING
+            """, batch_data, template="(%s, %s, %s, %s, %s, %s, NOW())")
+        
+        print(f"  ✓ 创建了 {count} 个 Fingers 指纹\n")
+
+    def create_fingerprinthub_fingerprints(self):
+        """创建 FingerPrintHub 指纹数据"""
+        print("🔍 创建 FingerPrintHub 指纹...")
+        cur = self.conn.cursor()
+        
+        # FP ID 前缀
+        fp_id_prefixes = [
+            'web', 'cms', 'framework', 'server', 'database', 'cache', 'cdn',
+            'waf', 'load-balancer', 'proxy', 'api', 'admin', 'monitoring'
+        ]
+        
+        # 应用名称模板
+        name_templates = [
+            'Apache-HTTP-Server-Detection-Web-Platform-Fingerprint',
+            'Nginx-Web-Server-Identification-Reverse-Proxy-Detection',
+            'WordPress-CMS-Detection-Content-Management-System-Fingerprint',
+            'Drupal-CMS-Identification-Web-Content-Platform-Detection',
+            'Joomla-CMS-Detection-Web-Content-Management-Framework',
+            'Laravel-Framework-Detection-PHP-Web-Application-Platform',
+            'Django-Framework-Identification-Python-Web-Framework-Detection',
+            'Spring-Boot-Framework-Detection-Java-Enterprise-Application',
+            'React-Library-Detection-JavaScript-UI-Framework-Fingerprint',
+            'Vue-JS-Framework-Detection-Progressive-JavaScript-Platform',
+            'Angular-Framework-Identification-TypeScript-Web-Platform',
+            'Docker-Container-Detection-Virtualization-Platform-Fingerprint',
+            'Kubernetes-Orchestration-Detection-Container-Management-Platform',
+            'Redis-Cache-Detection-In-Memory-Database-Fingerprint',
+            'MongoDB-Database-Detection-NoSQL-Document-Store-Platform',
+            'PostgreSQL-Database-Detection-Relational-Database-System',
+            'MySQL-Database-Detection-Relational-Database-Management',
+            'Elasticsearch-Search-Detection-Analytics-Engine-Platform',
+            'Jenkins-CI-CD-Detection-Automation-Server-Platform',
+            'GitLab-DevOps-Detection-Version-Control-Platform-System',
+            'Grafana-Monitoring-Detection-Observability-Platform-Dashboard',
+            'Prometheus-Monitoring-Detection-Time-Series-Database-System',
+            'Kibana-Visualization-Detection-Data-Dashboard-Platform',
+            'Cloudflare-CDN-Detection-Web-Application-Firewall-Platform',
+            'Akamai-CDN-Detection-Content-Delivery-Network-Platform',
+            'AWS-CloudFront-CDN-Detection-Amazon-Web-Services-Platform',
+            'Microsoft-IIS-Detection-Internet-Information-Services-Server',
+            'Tomcat-Server-Detection-Java-Servlet-Container-Platform',
+            'JBoss-Server-Detection-Enterprise-Application-Platform',
+            'WebLogic-Server-Detection-Oracle-Application-Server-Platform',
+        ]
+        
+        # 作者模板
+        authors = [
+            'security-research-team', 'fingerprint-detection-group', 'web-security-lab',
+            'cyber-threat-intelligence', 'vulnerability-research-team', 'security-automation-team',
+            'open-source-security', 'community-contributors', 'detection-engineering-team'
+        ]
+        
+        # 严重程度
+        severities = ['info', 'low', 'medium', 'high', 'critical']
+        
+        # metadata 模板
+        metadata_templates = [
+            {
+                'vendor': 'Apache Software Foundation',
+                'product': 'Apache HTTP Server',
+                'verified': True,
+                'max-request': 1,
+                'shodan-query': 'http.server:"Apache"'
+            },
+            {
+                'vendor': 'Nginx Inc',
+                'product': 'Nginx Web Server',
+                'verified': True,
+                'max-request': 1,
+                'shodan-query': 'http.server:"nginx"'
+            },
+            {
+                'vendor': 'WordPress',
+                'product': 'WordPress CMS',
+                'verified': True,
+                'max-request': 2,
+                'fofa-query': 'body="wp-content"'
+            },
+            {
+                'vendor': 'Various',
+                'product': 'Web Framework',
+                'verified': False,
+                'max-request': 1
+            },
+        ]
+        
+        # HTTP 规则模板
+        http_templates = [
+            [{
+                'method': 'GET',
+                'path': ['{{BaseURL}}'],
+                'matchers': [{
+                    'type': 'word',
+                    'words': ['Server: nginx', 'X-Powered-By'],
+                    'condition': 'or'
+                }]
+            }],
+            [{
+                'method': 'GET',
+                'path': ['{{BaseURL}}/admin'],
+                'matchers': [{
+                    'type': 'status',
+                    'status': [200, 401, 403]
+                }]
+            }],
+            [{
+                'method': 'GET',
+                'path': ['{{BaseURL}}'],
+                'matchers': [{
+                    'type': 'word',
+                    'words': ['wp-content', 'wordpress'],
+                    'part': 'body',
+                    'condition': 'and'
+                }]
+            }],
+        ]
+        
+        # source_file 模板
+        source_files = [
+            'fingerprints/web-servers/apache.yaml',
+            'fingerprints/web-servers/nginx.yaml',
+            'fingerprints/cms/wordpress.yaml',
+            'fingerprints/cms/drupal.yaml',
+            'fingerprints/frameworks/laravel.yaml',
+            'fingerprints/frameworks/django.yaml',
+            'fingerprints/frameworks/spring.yaml',
+            'fingerprints/databases/mongodb.yaml',
+            'fingerprints/databases/postgresql.yaml',
+            'fingerprints/cache/redis.yaml',
+        ]
+        
+        count = 0
+        batch_data = []
+        
+        for i in range(200):  # 生成 200 条 FingerPrintHub 指纹
+            fp_id = f'{random.choice(fp_id_prefixes)}-detection-{random.randint(10000, 99999)}'
+            name = f'{random.choice(name_templates)}-{random.randint(1000, 9999)}'
+            author = random.choice(authors)
+            tags = ','.join(random.sample(['web', 'cms', 'framework', 'server', 'detection', 'fingerprint'], random.randint(2, 4)))
+            severity = random.choice(severities)
+            metadata = random.choice(metadata_templates).copy()
+            http = random.choice(http_templates)
+            source_file = random.choice(source_files)
+            
+            batch_data.append((
+                fp_id, name, author, tags, severity,
+                json.dumps(metadata), json.dumps(http), source_file
+            ))
+            count += 1
+        
+        if batch_data:
+            execute_values(cur, """
+                INSERT INTO fingerprinthub_fingerprint (
+                    fp_id, name, author, tags, severity, metadata, http, source_file, created_at
+                )
+                VALUES %s
+                ON CONFLICT (fp_id) DO NOTHING
+            """, batch_data, template="(%s, %s, %s, %s, %s, %s, %s, %s, NOW())")
+        
+        print(f"  ✓ 创建了 {count} 个 FingerPrintHub 指纹\n")
+
+    def create_arl_fingerprints(self):
+        """创建 ARL 指纹数据"""
+        print("🔍 创建 ARL 指纹...")
+        cur = self.conn.cursor()
+        
+        # 应用名称模板
+        name_templates = [
+            'Apache-HTTP-Server-Web-Platform-Application-Server',
+            'Nginx-High-Performance-Web-Server-Reverse-Proxy',
+            'Microsoft-IIS-Internet-Information-Services-Server',
+            'WordPress-Content-Management-System-Blogging-Platform',
+            'Drupal-Open-Source-CMS-Content-Management-Framework',
+            'Joomla-Web-Content-Management-System-Framework',
+            'Laravel-PHP-Web-Application-Framework-MVC-Pattern',
+            'Django-Python-Web-Framework-MTV-Architecture',
+            'Spring-Boot-Java-Enterprise-Application-Framework',
+            'Express-Node-JS-Web-Application-Framework-Minimal',
+            'React-JavaScript-Library-User-Interface-Components',
+            'Vue-JS-Progressive-JavaScript-Framework-Reactive',
+            'Angular-TypeScript-Web-Application-Framework-Google',
+            'Docker-Container-Platform-Application-Deployment',
+            'Kubernetes-Container-Orchestration-Cloud-Native',
+            'Redis-In-Memory-Database-Cache-Message-Broker',
+            'MongoDB-Document-NoSQL-Database-Scalable-Platform',
+            'PostgreSQL-Relational-Database-Management-System',
+            'MySQL-Database-Management-Relational-Database-Oracle',
+            'Elasticsearch-Search-Analytics-Engine-Distributed',
+            'Jenkins-Automation-Server-Continuous-Integration',
+            'GitLab-DevOps-Platform-Git-Repository-CI-CD-Pipeline',
+            'Grafana-Observability-Metrics-Visualization-Dashboard',
+            'Prometheus-Monitoring-Time-Series-Database-Alerting',
+            'RabbitMQ-Message-Broker-AMQP-Protocol-Queue-System',
+            'Tomcat-Java-Servlet-Container-Application-Server',
+            'JBoss-Enterprise-Application-Platform-Java-EE-Server',
+            'WebLogic-Oracle-Application-Server-Java-Enterprise',
+            'Cloudflare-CDN-DDoS-Protection-Web-Firewall-Platform',
+            'Amazon-CloudFront-CDN-Content-Delivery-Network-AWS',
+        ]
+        
+        # 规则表达式模板
+        rule_templates = [
+            # 简单规则
+            'header="Server" && header="nginx"',
+            'body="WordPress" && body="wp-content"',
+            'title="Admin Panel" || title="Dashboard"',
+            'header="X-Powered-By" && header="PHP"',
+            'body="Powered by" && body="Laravel"',
+            # 复杂规则
+            '(header="Server" && header="Apache") || (body="Apache" && title="Apache")',
+            '(body="wp-content" && body="wp-includes") || (header="X-Powered-By" && header="WordPress")',
+            '(title="Jenkins" && body="Jenkins") || (header="X-Jenkins" && status="200")',
+            '(body="Spring" && body="Whitelabel Error Page") || header="X-Application-Context"',
+            '(body="React" && body="react-dom") || (body="__REACT" && body="reactRoot")',
+            # 带状态码规则
+            'status="200" && body="nginx" && title="Welcome to nginx"',
+            'status="403" && body="Apache" && header="Server"',
+            'status="401" && header="WWW-Authenticate" && body="Unauthorized"',
+            # 多条件规则
+            'header="Server" && (body="PHP" || body="Laravel" || body="Symfony")',
+            'body="Django" && (header="X-Frame-Options" || body="csrfmiddlewaretoken")',
+            '(title="GitLab" && body="gitlab") || (header="X-GitLab-Feature-Category")',
+            # JSON API 规则
+            'body="{\\"version\\"" && body="api" && header="Content-Type"',
+            'status="200" && body="swagger" && body="openapi"',
+            # 错误页面规则
+            'status="404" && body="Not Found" && body="nginx"',
+            'status="500" && body="Internal Server Error" && body="Apache"',
+        ]
+        
+        count = 0
+        batch_data = []
+        
+        for i in range(200):  # 生成 200 条 ARL 指纹
+            name = f'{random.choice(name_templates)}-{random.randint(1000, 9999)}'
+            rule = random.choice(rule_templates)
+            
+            batch_data.append((name, rule))
+            count += 1
+        
+        if batch_data:
+            execute_values(cur, """
+                INSERT INTO arl_fingerprint (name, rule, created_at)
+                VALUES %s
+                ON CONFLICT (name) DO NOTHING
+            """, batch_data, template="(%s, %s, NOW())")
+        
+        print(f"  ✓ 创建了 {count} 个 ARL 指纹\n")
 
 
 class MillionDataGenerator:

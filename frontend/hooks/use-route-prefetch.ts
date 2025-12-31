@@ -31,11 +31,22 @@ export function useRoutePrefetch(currentPath?: string) {
         // 工具
         '/tools/',
         '/tools/config/',
+        '/tools/config/opensource/',
+        '/tools/config/custom/',
         '/tools/nuclei/',
         '/tools/wordlists/',
+        // 指纹管理
+        '/tools/fingerprints/',
+        '/tools/fingerprints/ehole/',
+        '/tools/fingerprints/goby/',
+        '/tools/fingerprints/wappalyzer/',
+        '/tools/fingerprints/fingers/',
+        '/tools/fingerprints/fingerprinthub/',
+        '/tools/fingerprints/arl/',
         // 设置
         '/settings/workers/',
         '/settings/notifications/',
+        '/settings/system-logs/',
       ]
 
       routes.forEach((route) => {

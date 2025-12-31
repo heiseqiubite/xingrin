@@ -5,6 +5,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { DataTableColumnHeader } from "@/components/ui/data-table/column-header"
+import { ExpandableCell } from "@/components/ui/data-table/expandable-cell"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { useTranslations } from "next-intl"
 import type { EholeFingerprint } from "@/types/fingerprint.types"
@@ -94,7 +95,7 @@ export function createEholeFingerprintColumns({
         <DataTableColumnHeader column={column} title="CMS" />
       ),
       cell: ({ row }) => (
-        <div className="font-medium">{row.getValue("cms")}</div>
+        <ExpandableCell value={row.getValue("cms")} maxLines={2} />
       ),
       enableResizing: true,
       size: 200,

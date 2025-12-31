@@ -36,8 +36,8 @@ import { useTranslations } from "next-intl"
 
 const ARL_FILTER_EXAMPLES = [
   'name="Apache"',
-  'rule="body="',
-  'name="nginx" rule="header"',
+  'name=="Nginx"',
+  'name="WordPress"',
 ]
 
 interface ARLFingerprintDataTableProps {
@@ -84,7 +84,6 @@ export function ARLFingerprintDataTable({
 
   const arlFilterFields: FilterField[] = React.useMemo(() => [
     { key: "name", label: "Name", description: t("filter.arl.name") },
-    { key: "rule", label: "Rule", description: t("filter.arl.rule") },
   ], [t])
 
   const handleSmartSearch = (rawQuery: string) => {

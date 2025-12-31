@@ -5,6 +5,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { DataTableColumnHeader } from "@/components/ui/data-table/column-header"
+import { ExpandableCell, ExpandableMonoCell } from "@/components/ui/data-table/expandable-cell"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { useTranslations } from "next-intl"
 import type { FingerPrintHubFingerprint } from "@/types/fingerprint.types"
@@ -14,21 +15,21 @@ interface ColumnOptions {
 }
 
 /**
- * Severity badge with color coding
+ * Severity badge with color coding (matching Vulnerabilities style)
  */
 function SeverityBadge({ severity }: { severity: string }) {
-  const colorMap: Record<string, string> = {
-    critical: "bg-red-500 text-white",
-    high: "bg-orange-500 text-white",
-    medium: "bg-yellow-500 text-black",
-    low: "bg-blue-500 text-white",
-    info: "bg-gray-500 text-white",
+  const severityConfig: Record<string, { className: string }> = {
+    critical: { className: "bg-[#da3633]/10 text-[#da3633] border border-[#da3633]/20 dark:text-[#f85149]" },
+    high: { className: "bg-[#d29922]/10 text-[#d29922] border border-[#d29922]/20" },
+    medium: { className: "bg-[#d4a72c]/10 text-[#d4a72c] border border-[#d4a72c]/20" },
+    low: { className: "bg-[#238636]/10 text-[#238636] border border-[#238636]/20 dark:text-[#3fb950]" },
+    info: { className: "bg-[#848d97]/10 text-[#848d97] border border-[#848d97]/20" },
   }
   
-  const color = colorMap[severity?.toLowerCase()] || colorMap.info
+  const config = severityConfig[severity?.toLowerCase()] || severityConfig.info
   
   return (
-    <Badge className={`${color} text-xs`}>
+    <Badge className={config.className}>
       {severity || "info"}
     </Badge>
   )
@@ -79,14 +80,105 @@ function TagListCell({ tags }: { tags: string }) {
 }
 
 /**
- * HTTP matchers count cell
+ * Metadata cell - displays vendor, product, verified and queries
+ */
+function MetadataCell({ metadata }: { metadata: any }) {
+  const t = useTranslations("tooltips")
+  const [expanded, setExpanded] = React.useState(false)
+  
+  if (!metadata || Object.keys(metadata).length === 0) {
+    return <span className="text-muted-foreground">-</span>
+  }
+  
+  const items: { key: string; value: any }[] = []
+  Object.entries(metadata).forEach(([key, value]) => {
+    items.push({ key, value })
+  })
+  
+  const displayItems = expanded ? items : items.slice(0, 2)
+  const hasMore = items.length > 2
+  
+  return (
+    <div className="flex flex-col gap-1 w-full">
+      <div className="font-mono text-xs space-y-0.5 w-full">
+        {displayItems.map((item, idx) => (
+          <div key={idx} className={expanded ? "break-all w-full" : "truncate w-full"}>
+            "{item.key}": {JSON.stringify(item.value)}
+          </div>
+        ))}
+      </div>
+      {hasMore && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-xs text-primary hover:underline self-start inline-flex items-center gap-0.5"
+        >
+          {expanded ? (
+            <>
+              <ChevronUp className="h-3 w-3" />
+              <span>{t("collapse")}</span>
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-3 w-3" />
+              <span>{t("expand")}</span>
+            </>
+          )}
+        </button>
+      )}
+    </div>
+  )
+}
+
+/**
+ * HTTP matchers cell - displays detailed HTTP rules in JSON format
  */
 function HttpMatchersCell({ http }: { http: any[] }) {
+  const t = useTranslations("tooltips")
+  const [expanded, setExpanded] = React.useState(false)
+  
   if (!http || http.length === 0) return <span className="text-muted-foreground">-</span>
+  
+  // Extract key fields from http matchers
+  const httpItems: { key: string; value: any }[] = []
+  const hasMultiple = http.length > 1
+  http.forEach((item, idx) => {
+    const prefix = hasMultiple ? `[${idx}].` : ""
+    if (item.path) httpItems.push({ key: `${prefix}path`, value: item.path })
+    if (item.method) httpItems.push({ key: `${prefix}method`, value: item.method })
+    if (item.matchers) httpItems.push({ key: `${prefix}matchers`, value: item.matchers })
+  })
+  
+  const displayItems = expanded ? httpItems : httpItems.slice(0, 2)
+  const hasMore = httpItems.length > 2
+  
   return (
-    <Badge variant="outline" className="font-mono text-xs">
-      {http.length} matchers
-    </Badge>
+    <div className="flex flex-col gap-1 w-full">
+      <div className="font-mono text-xs space-y-0.5 w-full">
+        {displayItems.map((item, idx) => (
+          <div key={idx} className={expanded ? "break-all w-full" : "truncate w-full"}>
+            "{item.key}": {JSON.stringify(item.value)}
+          </div>
+        ))}
+      </div>
+      {hasMore && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-xs text-primary hover:underline self-start inline-flex items-center gap-0.5"
+        >
+          {expanded ? (
+            <>
+              <ChevronUp className="h-3 w-3" />
+              <span>{t("collapse")}</span>
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-3 w-3" />
+              <span>{t("expand")}</span>
+            </>
+          )}
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -128,9 +220,7 @@ export function createFingerPrintHubFingerprintColumns({
         <DataTableColumnHeader column={column} title="FP ID" />
       ),
       cell: ({ row }) => (
-        <code className="text-xs bg-muted px-1 py-0.5 rounded">
-          {row.getValue("fpId")}
-        </code>
+        <ExpandableMonoCell value={row.getValue("fpId")} maxLines={1} />
       ),
       enableResizing: true,
       size: 200,
@@ -142,7 +232,7 @@ export function createFingerPrintHubFingerprintColumns({
         <DataTableColumnHeader column={column} title="Name" />
       ),
       cell: ({ row }) => (
-        <div className="font-medium">{row.getValue("name")}</div>
+        <ExpandableCell value={row.getValue("name")} maxLines={2} />
       ),
       enableResizing: true,
       size: 200,
@@ -153,11 +243,9 @@ export function createFingerPrintHubFingerprintColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Author" />
       ),
-      cell: ({ row }) => {
-        const author = row.getValue("author") as string
-        if (!author) return <span className="text-muted-foreground">-</span>
-        return <span className="text-sm">{author}</span>
-      },
+      cell: ({ row }) => (
+        <ExpandableCell value={row.getValue("author")} maxLines={1} />
+      ),
       enableResizing: true,
       size: 120,
     },
@@ -182,14 +270,36 @@ export function createFingerPrintHubFingerprintColumns({
       size: 200,
     },
     {
+      accessorKey: "metadata",
+      meta: { title: "Metadata" },
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Metadata" />
+      ),
+      cell: ({ row }) => <MetadataCell metadata={row.getValue("metadata") || {}} />,
+      enableResizing: true,
+      size: 300,
+    },
+    {
       accessorKey: "http",
       meta: { title: "HTTP" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="HTTP" />
       ),
       cell: ({ row }) => <HttpMatchersCell http={row.getValue("http") || []} />,
-      enableResizing: false,
-      size: 100,
+      enableResizing: true,
+      size: 350,
+    },
+    {
+      accessorKey: "sourceFile",
+      meta: { title: "Source File" },
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Source File" />
+      ),
+      cell: ({ row }) => (
+        <ExpandableMonoCell value={row.getValue("sourceFile")} maxLines={1} />
+      ),
+      enableResizing: true,
+      size: 200,
     },
     {
       accessorKey: "createdAt",

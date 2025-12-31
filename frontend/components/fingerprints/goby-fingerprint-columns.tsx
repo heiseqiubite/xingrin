@@ -4,6 +4,7 @@ import React from "react"
 import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader } from "@/components/ui/data-table/column-header"
+import { ExpandableCell, ExpandableMonoCell } from "@/components/ui/data-table/expandable-cell"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { useTranslations } from "next-intl"
 import type { GobyFingerprint } from "@/types/fingerprint.types"
@@ -93,7 +94,7 @@ export function createGobyFingerprintColumns({
         <DataTableColumnHeader column={column} title="Name" />
       ),
       cell: ({ row }) => (
-        <div className="font-medium">{row.getValue("name")}</div>
+        <ExpandableCell value={row.getValue("name")} maxLines={2} />
       ),
       enableResizing: true,
       size: 200,
@@ -104,10 +105,9 @@ export function createGobyFingerprintColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Logic" />
       ),
-      cell: ({ row }) => {
-        const logic = row.getValue("logic") as string
-        return <span className="font-mono text-xs">{logic}</span>
-      },
+      cell: ({ row }) => (
+        <ExpandableMonoCell value={row.getValue("logic")} maxLines={1} />
+      ),
       enableResizing: false,
       size: 100,
     },

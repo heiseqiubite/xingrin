@@ -4,7 +4,7 @@ import React from "react"
 import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader } from "@/components/ui/data-table/column-header"
-import { ExpandableCell } from "@/components/ui/data-table/expandable-cell"
+import { ExpandableCell, ExpandableMonoCell } from "@/components/ui/data-table/expandable-cell"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { useTranslations } from "next-intl"
 import type { WappalyzerFingerprint } from "@/types/fingerprint.types"
@@ -119,7 +119,7 @@ export function createWappalyzerFingerprintColumns({
         <DataTableColumnHeader column={column} title="Name" />
       ),
       cell: ({ row }) => (
-        <div className="font-medium">{row.getValue("name")}</div>
+        <ExpandableCell value={row.getValue("name")} maxLines={2} />
       ),
       enableResizing: true,
       size: 180,
@@ -132,8 +132,8 @@ export function createWappalyzerFingerprintColumns({
       ),
       cell: ({ row }) => {
         const cats = row.getValue("cats") as number[]
-        if (!cats || cats.length === 0) return "-"
-        return <span className="font-mono text-xs">{JSON.stringify(cats)}</span>
+        if (!cats || cats.length === 0) return <span className="text-muted-foreground">-</span>
+        return <ExpandableMonoCell value={JSON.stringify(cats)} maxLines={1} />
       },
       enableResizing: true,
       size: 100,
@@ -156,8 +156,8 @@ export function createWappalyzerFingerprintColumns({
       ),
       cell: ({ row }) => {
         const implies = row.getValue("implies") as string[]
-        if (!implies || implies.length === 0) return "-"
-        return <span className="font-mono text-xs">{implies.join(", ")}</span>
+        if (!implies || implies.length === 0) return <span className="text-muted-foreground">-</span>
+        return <ExpandableMonoCell value={implies.join(", ")} maxLines={1} />
       },
       enableResizing: true,
       size: 150,
@@ -188,10 +188,9 @@ export function createWappalyzerFingerprintColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="CPE" />
       ),
-      cell: ({ row }) => {
-        const cpe = row.getValue("cpe") as string
-        return cpe ? <span className="font-mono text-xs">{cpe}</span> : "-"
-      },
+      cell: ({ row }) => (
+        <ExpandableMonoCell value={row.getValue("cpe")} maxLines={1} />
+      ),
       enableResizing: true,
       size: 150,
     },

@@ -129,6 +129,7 @@ class FingersFingerprint(models.Model):
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['name']),
+            models.Index(fields=['link']),
             models.Index(fields=['focus']),
             models.Index(fields=['-created_at']),
         ]
@@ -161,6 +162,7 @@ class FingerPrintHubFingerprint(models.Model):
         indexes = [
             models.Index(fields=['fp_id']),
             models.Index(fields=['name']),
+            models.Index(fields=['author']),
             models.Index(fields=['severity']),
             models.Index(fields=['-created_at']),
         ]

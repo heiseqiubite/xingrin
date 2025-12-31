@@ -5,7 +5,8 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { DataTableColumnHeader } from "@/components/ui/data-table/column-header"
-import { ChevronDown, ChevronUp, Star } from "lucide-react"
+import { ExpandableCell } from "@/components/ui/data-table/expandable-cell"
+import { ChevronDown, ChevronUp } from "lucide-react"
 import { useTranslations } from "next-intl"
 import type { FingersFingerprint } from "@/types/fingerprint.types"
 
@@ -57,14 +58,70 @@ function TagListCell({ tags }: { tags: string[] }) {
 }
 
 /**
- * Rule count cell - displays rule count
+ * Extract rule items from rules array
  */
-function RuleCountCell({ rules }: { rules: any[] }) {
-  if (!rules || rules.length === 0) return <span className="text-muted-foreground">-</span>
+interface RuleItem {
+  key: string
+  value: any
+}
+
+function extractRuleItems(rules: any[]): RuleItem[] {
+  const items: RuleItem[] = []
+  
+  rules.forEach((rule) => {
+    if (rule.regexps) {
+      Object.entries(rule.regexps).forEach(([key, value]) => {
+        items.push({ key, value })
+      })
+    }
+  })
+  
+  return items
+}
+
+/**
+ * Rules cell - displays rules in JSON format (matching Wappalyzer style)
+ */
+function RulesCell({ rules }: { rules: any[] }) {
+  const t = useTranslations("tooltips")
+  const [expanded, setExpanded] = React.useState(false)
+  const ruleItems = extractRuleItems(rules)
+  
+  if (ruleItems.length === 0) {
+    return <span className="text-muted-foreground">-</span>
+  }
+  
+  const displayItems = expanded ? ruleItems : ruleItems.slice(0, 2)
+  const hasMore = ruleItems.length > 2
+  
   return (
-    <Badge variant="outline" className="font-mono text-xs">
-      {rules.length} rules
-    </Badge>
+    <div className="flex flex-col gap-1 w-full">
+      <div className="font-mono text-xs space-y-0.5 w-full">
+        {displayItems.map((item, idx) => (
+          <div key={idx} className={expanded ? "break-all w-full" : "truncate w-full"}>
+            "{item.key}": {JSON.stringify(item.value)}
+          </div>
+        ))}
+      </div>
+      {hasMore && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-xs text-primary hover:underline self-start inline-flex items-center gap-0.5"
+        >
+          {expanded ? (
+            <>
+              <ChevronUp className="h-3 w-3" />
+              <span>{t("collapse")}</span>
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-3 w-3" />
+              <span>{t("expand")}</span>
+            </>
+          )}
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -121,20 +178,31 @@ export function createFingersFingerprintColumns({
       size: 40,
     },
     {
+      accessorKey: "focus",
+      meta: { title: "Focus" },
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Focus" />
+      ),
+      cell: ({ row }) => {
+        const focus = row.getValue("focus") as boolean
+        return (
+          <span className={focus ? "text-foreground" : "text-muted-foreground"}>
+            {String(focus)}
+          </span>
+        )
+      },
+      enableResizing: false,
+      size: 80,
+    },
+    {
       accessorKey: "name",
       meta: { title: "Name" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Name" />
       ),
-      cell: ({ row }) => {
-        const focus = row.original.focus
-        return (
-          <div className="flex items-center gap-2">
-            {focus && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />}
-            <span className="font-medium">{row.getValue("name")}</span>
-          </div>
-        )
-      },
+      cell: ({ row }) => (
+        <ExpandableCell value={row.getValue("name")} maxLines={2} />
+      ),
       enableResizing: true,
       size: 200,
     },
@@ -152,9 +220,9 @@ export function createFingersFingerprintColumns({
             href={link} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-primary hover:underline truncate block max-w-[200px]"
+            className="text-primary hover:underline"
           >
-            {link}
+            <ExpandableCell value={link} variant="url" maxLines={1} />
           </a>
         )
       },
@@ -167,9 +235,9 @@ export function createFingersFingerprintColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Rule" />
       ),
-      cell: ({ row }) => <RuleCountCell rules={row.getValue("rule") || []} />,
-      enableResizing: false,
-      size: 100,
+      cell: ({ row }) => <RulesCell rules={row.getValue("rule") || []} />,
+      enableResizing: true,
+      size: 300,
     },
     {
       accessorKey: "tag",
