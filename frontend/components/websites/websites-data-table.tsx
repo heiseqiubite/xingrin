@@ -15,6 +15,7 @@ const WEBSITE_FILTER_FIELDS: FilterField[] = [
   { key: "host", label: "Host", description: "Hostname" },
   { key: "title", label: "Title", description: "Page title" },
   { key: "status", label: "Status", description: "HTTP status code" },
+  { key: "tech", label: "Tech", description: "Technologies" },
 ]
 
 // Website page filter examples
@@ -22,6 +23,7 @@ const WEBSITE_FILTER_EXAMPLES = [
   'host="api.example.com" && status="200"',
   'title="Login" || title="Admin"',
   'url="/api/*" && status!="404"',
+  'tech="nginx" || tech="apache"',
 ]
 
 interface WebSitesDataTableProps {

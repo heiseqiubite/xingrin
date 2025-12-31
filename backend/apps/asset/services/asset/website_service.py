@@ -20,6 +20,7 @@ class WebSiteService:
         'host': 'host',
         'title': 'title',
         'status': 'status_code',
+        'tech': 'tech',
     }
     
     def __init__(self, repository=None):
@@ -107,14 +108,14 @@ class WebSiteService:
         """获取目标下的所有网站"""
         queryset = self.repo.get_by_target(target_id)
         if filter_query:
-            queryset = apply_filters(queryset, filter_query, self.FILTER_FIELD_MAPPING)
+            queryset = apply_filters(queryset, filter_query, self.FILTER_FIELD_MAPPING, json_array_fields=['tech'])
         return queryset
     
     def get_all(self, filter_query: Optional[str] = None):
         """获取所有网站"""
         queryset = self.repo.get_all()
         if filter_query:
-            queryset = apply_filters(queryset, filter_query, self.FILTER_FIELD_MAPPING)
+            queryset = apply_filters(queryset, filter_query, self.FILTER_FIELD_MAPPING, json_array_fields=['tech'])
         return queryset
     
     def get_by_url(self, url: str, target_id: int) -> int:
