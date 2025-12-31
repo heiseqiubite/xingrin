@@ -21,13 +21,8 @@
 
 ### 1. 下载项目
 ```bash
-# 方式 1：Git 克隆（推荐）
 git clone https://github.com/你的用户名/xingrin.git
 cd xingrin
-
-# 方式 2：下载 ZIP
-wget https://github.com/你的用户名/xingrin/archive/main.zip
-unzip main.zip && cd xingrin-main
 ```
 
 ### 2. 执行安装
@@ -108,9 +103,6 @@ graph TD
 
 # 重启服务
 ./restart.sh
-
-# 更新系统
-./update.sh
 
 # 卸载系统
 ./uninstall.sh
@@ -233,11 +225,6 @@ docker logs --tail 100 xingrin-agent
 tail -f /opt/xingrin/logs/*.log
 ```
 
-### 3. 定期更新
-```bash
-# 定期执行系统更新
-./update.sh
-```
 
 ## 下一步
 
