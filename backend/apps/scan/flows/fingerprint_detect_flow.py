@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 
 def calculate_fingerprint_detect_timeout(
     url_count: int,
-    base_per_url: float = 5.0,
+    base_per_url: float = 10.0,
     min_timeout: int = 300
 ) -> int:
     """
@@ -49,7 +49,7 @@ def calculate_fingerprint_detect_timeout(
     
     Args:
         url_count: URL 数量
-        base_per_url: 每 URL 基础时间（秒），默认 5秒
+        base_per_url: 每 URL 基础时间（秒），默认 10秒
         min_timeout: 最小超时时间（秒），默认 300秒
         
     Returns:
