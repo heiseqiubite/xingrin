@@ -177,6 +177,10 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# ==================== Worker API Key 配置 ====================
+# Worker 节点认证密钥（从环境变量读取）
+WORKER_API_KEY = os.environ.get('WORKER_API_KEY', '')
+
 # ==================== REST Framework 配置 ====================
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'apps.common.pagination.BasePagination',  # 使用基础分页器
@@ -185,6 +189,14 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'apps.common.authentication.CsrfExemptSessionAuthentication',
     ],
+    
+    # 全局权限配置：默认需要认证，公开端点和 Worker 端点在权限类中单独处理
+    'DEFAULT_PERMISSION_CLASSES': [
+        'apps.common.permissions.IsAuthenticatedOrPublic',
+    ],
+    
+    # 自定义异常处理器：统一 401/403 错误响应格式
+    'EXCEPTION_HANDLER': 'apps.common.exception_handlers.custom_exception_handler',
     
     # JSON 命名格式转换：后端 snake_case ↔ 前端 camelCase
     'DEFAULT_RENDERER_CLASSES': (

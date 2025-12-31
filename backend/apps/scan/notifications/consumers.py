@@ -5,12 +5,13 @@ WebSocket Consumer - 通知实时推送
 import json
 import logging
 import asyncio
-from channels.generic.websocket import AsyncWebsocketConsumer
+
+from apps.common.websocket_auth import AuthenticatedWebsocketConsumer
 
 logger = logging.getLogger(__name__)
 
 
-class NotificationConsumer(AsyncWebsocketConsumer):
+class NotificationConsumer(AuthenticatedWebsocketConsumer):
     """
     通知 WebSocket Consumer
     
@@ -23,9 +24,9 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         super().__init__(*args, **kwargs)
         self.heartbeat_task = None  # 心跳任务
     
-    async def connect(self):
+    async def on_connect(self):
         """
-        客户端连接时调用
+        客户端连接时调用（已通过认证）
         加入通知广播组
         """
         # 通知组名（所有客户端共享）

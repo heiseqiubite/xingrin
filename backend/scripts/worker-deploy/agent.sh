@@ -95,6 +95,7 @@ EOF
     
     RESPONSE=$(curl -k -s -X POST \
         -H "Content-Type: application/json" \
+        -H "X-Worker-API-Key: ${WORKER_API_KEY}" \
         -d "$REGISTER_DATA" \
         "${API_URL}/api/workers/register/" 2>/dev/null)
     
@@ -116,7 +117,7 @@ if [ -z "$WORKER_ID" ]; then
     # 等待 Server 就绪
     log "等待 Server 就绪..."
     for i in $(seq 1 30); do
-        if curl -k -s "${API_URL}/api/" > /dev/null 2>&1; then
+        if curl -k -s -H "X-Worker-API-Key: ${WORKER_API_KEY}" "${API_URL}/api/workers/config/?is_local=${IS_LOCAL}" > /dev/null 2>&1; then
             log "${GREEN}Server 已就绪${NC}"
             break
         fi
@@ -189,6 +190,7 @@ EOF
     RESPONSE_FILE=$(mktemp)
     HTTP_CODE=$(curl -k -s -o "$RESPONSE_FILE" -w "%{http_code}" -X POST \
         -H "Content-Type: application/json" \
+        -H "X-Worker-API-Key: ${WORKER_API_KEY}" \
         -d "$JSON_DATA" \
         "${API_URL}/api/workers/${WORKER_ID}/heartbeat/" 2>/dev/null || echo "000")
     RESPONSE_BODY=$(cat "$RESPONSE_FILE" 2>/dev/null)

@@ -305,6 +305,7 @@ def _push_via_api_callback(notification: Notification, server_url: str) -> None:
     通过 HTTP 请求 Server 容器的 /api/callbacks/notification/ 接口。
     Worker 无法直接访问 Redis，需要由 Server 代为推送 WebSocket。
     """
+    import os
     import requests
     
     try:
@@ -318,8 +319,14 @@ def _push_via_api_callback(notification: Notification, server_url: str) -> None:
             'created_at': notification.created_at.isoformat()
         }
         
+        # 构建请求头（包含 Worker API Key）
+        headers = {'Content-Type': 'application/json'}
+        worker_api_key = os.environ.get("WORKER_API_KEY", "")
+        if worker_api_key:
+            headers["X-Worker-API-Key"] = worker_api_key
+        
         # verify=False: 远程 Worker 回调 Server 时可能使用自签名证书
-        resp = requests.post(callback_url, json=data, timeout=5, verify=False)
+        resp = requests.post(callback_url, json=data, headers=headers, timeout=5, verify=False)
         resp.raise_for_status()
         
         logger.debug(f"通知回调推送成功 - ID: {notification.id}")

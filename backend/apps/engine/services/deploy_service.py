@@ -66,6 +66,7 @@ def get_start_agent_script(
     # 替换变量
     script = script.replace("{{HEARTBEAT_API_URL}}", heartbeat_api_url or '')
     script = script.replace("{{WORKER_ID}}", str(worker_id) if worker_id else '')
+    script = script.replace("{{WORKER_API_KEY}}", getattr(settings, 'WORKER_API_KEY', ''))
     
     # 注入镜像版本配置（确保远程节点使用相同版本）
     docker_user = getattr(settings, 'DOCKER_USER', 'yyhuni')

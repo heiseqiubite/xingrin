@@ -9,7 +9,7 @@ from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 
 from apps.common.response_helpers import success_response, error_response
 from apps.common.error_codes import ErrorCodes
@@ -134,30 +134,10 @@ class ChangePasswordView(APIView):
     修改密码
     POST /api/auth/change-password/
     """
-    authentication_classes = []  # 禁用认证（绕过 CSRF）
-    permission_classes = [AllowAny]  # 手动检查登录状态
     
     def post(self, request):
-        # 手动检查登录状态（从 session 获取用户）
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-        
-        user_id = request.session.get('_auth_user_id')
-        if not user_id:
-            return error_response(
-                code=ErrorCodes.UNAUTHORIZED,
-                message='Please login first',
-                status_code=status.HTTP_401_UNAUTHORIZED
-            )
-        
-        try:
-            user = User.objects.get(pk=user_id)
-        except User.DoesNotExist:
-            return error_response(
-                code=ErrorCodes.UNAUTHORIZED,
-                message='User does not exist',
-                status_code=status.HTTP_401_UNAUTHORIZED
-            )
+        # 使用全局权限类验证，request.user 已经是认证用户
+        user = request.user
         
         # CamelCaseParser 将 oldPassword -> old_password
         old_password = request.data.get('old_password')

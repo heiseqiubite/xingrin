@@ -9,7 +9,6 @@ import logging
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -42,9 +41,6 @@ class SystemLogFilesView(APIView):
             ]
         }
     """
-    
-    authentication_classes = []
-    permission_classes = [AllowAny]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -80,15 +76,7 @@ class SystemLogsView(APIView):
         {
             "content": "日志内容字符串..."
         }
-        
-    Note:
-        - 当前为开发阶段，暂时允许匿名访问
-        - 生产环境应添加管理员权限验证
     """
-    
-    # TODO: 生产环境应改为 IsAdminUser 权限
-    authentication_classes = []
-    permission_classes = [AllowAny]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

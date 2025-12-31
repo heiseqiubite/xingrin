@@ -96,7 +96,13 @@ def ensure_wordlist_local(wordlist_name: str) -> str:
         ssl_context.check_hostname = False
         ssl_context.verify_mode = ssl.CERT_NONE
         
-        with urllib_request.urlopen(download_url, context=ssl_context) as resp:
+        # 创建带 API Key 的请求
+        req = urllib_request.Request(download_url)
+        worker_api_key = os.getenv('WORKER_API_KEY', '')
+        if worker_api_key:
+            req.add_header('X-Worker-API-Key', worker_api_key)
+        
+        with urllib_request.urlopen(req, context=ssl_context) as resp:
             if resp.status != 200:
                 raise RuntimeError(f"下载字典失败，HTTP {resp.status}")
             data = resp.read()

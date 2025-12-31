@@ -136,6 +136,20 @@ apiClient.interceptors.response.use(
       }
     }
 
+    // Handle 401 Unauthorized: redirect to login page
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      const url = error.config?.url || '';
+      // Exclude auth-related APIs to avoid redirect loops
+      const isAuthApi = url.includes('/auth/login') || 
+                        url.includes('/auth/logout') || 
+                        url.includes('/auth/me');
+      
+      if (!isAuthApi && typeof window !== 'undefined') {
+        // Clear any cached state and redirect to login
+        window.location.href = '/login';
+      }
+    }
+
     return Promise.reject(error);
   }
 );

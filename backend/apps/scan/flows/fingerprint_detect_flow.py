@@ -37,28 +37,24 @@ logger = logging.getLogger(__name__)
 
 def calculate_fingerprint_detect_timeout(
     url_count: int,
-    base_per_url: float = 3.0,
-    min_timeout: int = 60
+    base_per_url: float = 5.0,
+    min_timeout: int = 300
 ) -> int:
     """
     根据 URL 数量计算超时时间
     
     公式：超时时间 = URL 数量 × 每 URL 基础时间
-    最小值：60秒
+    最小值：300秒
     无上限
     
     Args:
         url_count: URL 数量
-        base_per_url: 每 URL 基础时间（秒），默认 3秒
-        min_timeout: 最小超时时间（秒），默认 60秒
+        base_per_url: 每 URL 基础时间（秒），默认 5秒
+        min_timeout: 最小超时时间（秒），默认 300秒
         
     Returns:
         int: 计算出的超时时间（秒）
         
-    示例：
-        100 URL × 3秒 = 300秒
-        1000 URL × 3秒 = 3000秒（50分钟）
-        10000 URL × 3秒 = 30000秒（8.3小时）
     """
     timeout = int(url_count * base_per_url)
     return max(min_timeout, timeout)

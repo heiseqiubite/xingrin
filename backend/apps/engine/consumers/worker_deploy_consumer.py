@@ -6,17 +6,17 @@ import json
 import logging
 import asyncio
 import os
-from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 
 from django.conf import settings
 
+from apps.common.websocket_auth import AuthenticatedWebsocketConsumer
 from apps.engine.services import WorkerService
 
 logger = logging.getLogger(__name__)
 
 
-class WorkerDeployConsumer(AsyncWebsocketConsumer):
+class WorkerDeployConsumer(AuthenticatedWebsocketConsumer):
     """
     Worker 交互式终端 WebSocket Consumer
     
@@ -31,8 +31,8 @@ class WorkerDeployConsumer(AsyncWebsocketConsumer):
         self.read_task = None
         self.worker_service = WorkerService()
     
-    async def connect(self):
-        """连接时加入对应 Worker 的组并自动建立 SSH 连接"""
+    async def on_connect(self):
+        """连接时加入对应 Worker 的组并自动建立 SSH 连接（已通过认证）"""
         self.worker_id = self.scope['url_route']['kwargs']['worker_id']
         self.group_name = f'worker_deploy_{self.worker_id}'
         

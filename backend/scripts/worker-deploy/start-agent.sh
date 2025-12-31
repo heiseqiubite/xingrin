@@ -30,6 +30,7 @@ IMAGE="${DOCKER_USER}/xingrin-agent:${IMAGE_TAG}"
 # 预设变量（远程部署时由 deploy_service.py 替换）
 PRESET_SERVER_URL="{{HEARTBEAT_API_URL}}"
 PRESET_WORKER_ID="{{WORKER_ID}}"
+PRESET_API_KEY="{{WORKER_API_KEY}}"
 
 # 颜色定义
 GREEN='\033[0;32m'
@@ -68,6 +69,7 @@ start_agent() {
         -e SERVER_URL="${PRESET_SERVER_URL}" \
         -e WORKER_ID="${PRESET_WORKER_ID}" \
         -e IMAGE_TAG="${IMAGE_TAG}" \
+        -e WORKER_API_KEY="${PRESET_API_KEY}" \
         -v /proc:/host/proc:ro \
         ${IMAGE}
     

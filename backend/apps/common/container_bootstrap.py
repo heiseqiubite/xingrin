@@ -40,8 +40,14 @@ def fetch_config_and_setup_django():
     print(f"[CONFIG] 正在从配置中心获取配置: {config_url}")
     print(f"[CONFIG] IS_LOCAL={is_local}")
     try:
+        # 构建请求头（包含 Worker API Key）
+        headers = {}
+        worker_api_key = os.environ.get("WORKER_API_KEY", "")
+        if worker_api_key:
+            headers["X-Worker-API-Key"] = worker_api_key
+        
         # verify=False: 远程 Worker 通过 HTTPS 访问时可能使用自签名证书
-        resp = requests.get(config_url, timeout=10, verify=False)
+        resp = requests.get(config_url, headers=headers, timeout=10, verify=False)
         resp.raise_for_status()
         config = resp.json()
         
