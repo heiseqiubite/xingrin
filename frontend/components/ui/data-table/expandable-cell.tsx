@@ -130,7 +130,7 @@ export function ExpandableCell({
       <div
         ref={contentRef}
         className={cn(
-          "text-sm break-all leading-relaxed whitespace-normal",
+          "text-sm break-all leading-relaxed whitespace-pre-wrap",
           variant === "mono" && "font-mono text-xs text-muted-foreground",
           variant === "url" && "text-muted-foreground",
           variant === "muted" && "text-muted-foreground",
