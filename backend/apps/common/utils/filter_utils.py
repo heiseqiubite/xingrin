@@ -29,9 +29,17 @@ from dataclasses import dataclass
 from typing import List, Dict, Optional, Union
 from enum import Enum
 
-from django.db.models import QuerySet, Q
+from django.db.models import QuerySet, Q, F, Func, CharField
+from django.db.models.functions import Cast
 
 logger = logging.getLogger(__name__)
+
+
+class ArrayToString(Func):
+    """PostgreSQL array_to_string 函数"""
+    function = 'array_to_string'
+    template = "%(function)s(%(expressions)s, ',')"
+    output_field = CharField()
 
 
 class LogicalOp(Enum):
@@ -169,6 +177,21 @@ class QueryBuilder:
         
         json_array_fields = json_array_fields or []
         
+        # 收集需要 annotate 的数组模糊搜索字段
+        array_fuzzy_fields = set()
+        
+        # 第一遍：检查是否有数组模糊匹配
+        for group in filter_groups:
+            f = group.filter
+            db_field = field_mapping.get(f.field)
+            if db_field and db_field in json_array_fields and f.operator == '=':
+                array_fuzzy_fields.add(db_field)
+        
+        # 对数组模糊搜索字段做 annotate
+        for field in array_fuzzy_fields:
+            annotate_name = f'{field}_text'
+            queryset = queryset.annotate(**{annotate_name: ArrayToString(F(field))})
+        
         # 构建 Q 对象
         combined_q = None
         
@@ -205,8 +228,17 @@ class QueryBuilder:
     def _build_single_q(cls, field: str, operator: str, value: str, is_json_array: bool = False) -> Optional[Q]:
         """构建单个条件的 Q 对象"""
         if is_json_array:
-            # JSON 数组字段使用 __contains 查询
-            return Q(**{f'{field}__contains': [value]})
+            if operator == '==':
+                # 精确匹配：数组中包含完全等于 value 的元素
+                return Q(**{f'{field}__contains': [value]})
+            elif operator == '!=':
+                # 不包含：数组中不包含完全等于 value 的元素
+                return ~Q(**{f'{field}__contains': [value]})
+            else:  # '=' 模糊匹配
+                # 使用 annotate 后的字段进行模糊搜索
+                # 字段已在 build_query 中通过 ArrayToString 转换为文本
+                annotate_name = f'{field}_text'
+                return Q(**{f'{annotate_name}__icontains': value})
         
         if operator == '!=':
             return cls._build_not_equal_q(field, value)
