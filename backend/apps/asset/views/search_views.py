@@ -23,6 +23,7 @@
 
 import logging
 import json
+from urllib.parse import urlparse, urlunparse
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.request import Request
@@ -108,8 +109,8 @@ class AssetSearchView(APIView):
         根据 URL 前缀批量查询漏洞数据
         
         漏洞 URL 是 website URL 的子路径，使用前缀匹配：
-        - website.url: https://example.com
-        - vulnerability.url: https://example.com/api/users?id=1
+        - website.url: https://example.com/path?query=1
+        - vulnerability.url: https://example.com/path/api/users
         
         Args:
             website_urls: website URL 列表，格式为 [(url, target_id), ...]
@@ -122,20 +123,27 @@ class AssetSearchView(APIView):
         
         try:
             with connection.cursor() as cursor:
-                # 构建 OR 条件：每个 website URL 作为前缀匹配
-                # 同时限制 target_id 以提高性能
+                # 构建 OR 条件：每个 website URL（去掉查询参数）作为前缀匹配
                 conditions = []
                 params = []
+                url_mapping = {}  # base_url -> original_url
+                
                 for url, target_id in website_urls:
+                    if not url or target_id is None:
+                        continue
+                    # 使用 urlparse 去掉查询参数和片段，只保留 scheme://netloc/path
+                    parsed = urlparse(url)
+                    base_url = urlunparse((parsed.scheme, parsed.netloc, parsed.path, '', '', ''))
+                    url_mapping[base_url] = url
                     conditions.append("(v.url LIKE %s AND v.target_id = %s)")
-                    params.extend([url + '%', target_id])
+                    params.extend([base_url + '%', target_id])
                 
                 if not conditions:
                     return {}
                 
                 where_clause = " OR ".join(conditions)
                 
-                cursor.execute(f"""
+                sql = f"""
                     SELECT v.id, v.vuln_type, v.severity, v.url, v.target_id
                     FROM vulnerability v
                     WHERE {where_clause}
@@ -147,7 +155,8 @@ class AssetSearchView(APIView):
                             WHEN 'low' THEN 4 
                             ELSE 5 
                         END
-                """, params)
+                """
+                cursor.execute(sql, params)
                 
                 # 获取所有漏洞
                 all_vulns = []
@@ -161,13 +170,15 @@ class AssetSearchView(APIView):
                         'target_id': row[4],
                     })
                 
-                # 按 website URL 前缀分组
+                # 按原始 website URL 分组（用于返回结果）
                 result = {url: [] for url, _ in website_urls}
                 for vuln in all_vulns:
                     vuln_url = vuln['url']
                     # 找到匹配的 website URL（最长前缀匹配）
                     for website_url, target_id in website_urls:
-                        if vuln_url.startswith(website_url) and vuln['target_id'] == target_id:
+                        parsed = urlparse(website_url)
+                        base_url = urlunparse((parsed.scheme, parsed.netloc, parsed.path, '', '', ''))
+                        if vuln_url.startswith(base_url) and vuln['target_id'] == target_id:
                             result[website_url].append(vuln)
                             break
                 

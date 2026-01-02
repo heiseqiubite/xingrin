@@ -260,6 +260,12 @@ class TestDataGenerator:
     def clear_data(self):
         """清除所有测试数据"""
         cur = self.conn.cursor()
+        
+        # 先删除 IMMV（避免 pg_ivm 的 anyarray bug）
+        print("  删除 IMMV...")
+        cur.execute("DROP TABLE IF EXISTS asset_search_view CASCADE")
+        self.conn.commit()
+        
         tables = [
             # 指纹表
             'ehole_fingerprint', 'goby_fingerprint', 'wappalyzer_fingerprint',
@@ -275,6 +281,26 @@ class TestDataGenerator:
         ]
         for table in tables:
             cur.execute(f"DELETE FROM {table}")
+        self.conn.commit()
+        
+        # 重建 IMMV
+        print("  重建 IMMV...")
+        cur.execute("""
+            SELECT pgivm.create_immv('asset_search_view', $$
+                SELECT 
+                    w.id,
+                    w.url,
+                    w.host,
+                    w.title,
+                    w.tech,
+                    w.status_code,
+                    w.response_headers,
+                    w.response_body,
+                    w.created_at,
+                    w.target_id
+                FROM website w
+            $$)
+        """)
         self.conn.commit()
         print("  ✓ 数据清除完成\n")
 
@@ -1248,77 +1274,79 @@ class TestDataGenerator:
         print(f"  ✓ 创建了 {count} 个主机端口映射\n")
 
     def create_vulnerabilities(self, target_ids: list):
-        """创建漏洞"""
+        """创建漏洞（基于 website URL 前缀）"""
         print("🐛 创建漏洞...")
         cur = self.conn.cursor()
         
         vuln_types = [
-            'sql-injection-authentication-bypass-vulnerability-',  # 50 chars
-            'cross-site-scripting-xss-stored-persistent-attack-',  # 50 chars
-            'cross-site-request-forgery-csrf-token-validation--',  # 50 chars
-            'server-side-request-forgery-ssrf-internal-access--',  # 50 chars
-            'xml-external-entity-xxe-injection-vulnerability---',  # 50 chars
-            'remote-code-execution-rce-command-injection-flaw--',  # 50 chars
-            'local-file-inclusion-lfi-path-traversal-exploit---',  # 50 chars
-            'directory-traversal-arbitrary-file-read-access----',  # 50 chars
-            'authentication-bypass-session-management-flaw-----',  # 50 chars
-            'insecure-direct-object-reference-idor-access-ctrl-',  # 50 chars
-            'sensitive-data-exposure-information-disclosure----',  # 50 chars
-            'security-misconfiguration-default-credentials-----',  # 50 chars
-            'broken-access-control-privilege-escalation-vuln---',  # 50 chars
-            'cors-misconfiguration-cross-origin-data-leakage---',  # 50 chars
-            'subdomain-takeover-dns-misconfiguration-exploit---',  # 50 chars
-            'exposed-admin-panel-unauthorized-access-control---',  # 50 chars
-            'default-credentials-weak-authentication-bypass----',  # 50 chars
-            'information-disclosure-sensitive-data-exposure----',  # 50 chars
-            'command-injection-os-command-execution-exploit----',  # 50 chars
-            'ldap-injection-directory-service-manipulation-----',  # 50 chars
-            'xpath-injection-xml-query-manipulation-attack-----',  # 50 chars
-            'nosql-injection-mongodb-query-manipulation--------',  # 50 chars
-            'template-injection-ssti-server-side-execution-----',  # 50 chars
-            'deserialization-vulnerability-object-injection----',  # 50 chars
-            'jwt-vulnerability-token-forgery-authentication----',  # 50 chars
-            'open-redirect-url-redirection-phishing-attack-----',  # 50 chars
-            'http-request-smuggling-cache-poisoning-attack-----',  # 50 chars
-            'host-header-injection-password-reset-poisoning----',  # 50 chars
-            'clickjacking-ui-redressing-frame-injection--------',  # 50 chars
-            'session-fixation-authentication-session-attack----',  # 50 chars
+            'sql-injection-authentication-bypass-vulnerability-',
+            'cross-site-scripting-xss-stored-persistent-attack-',
+            'cross-site-request-forgery-csrf-token-validation--',
+            'server-side-request-forgery-ssrf-internal-access--',
+            'xml-external-entity-xxe-injection-vulnerability---',
+            'remote-code-execution-rce-command-injection-flaw--',
+            'local-file-inclusion-lfi-path-traversal-exploit---',
+            'directory-traversal-arbitrary-file-read-access----',
+            'authentication-bypass-session-management-flaw-----',
+            'insecure-direct-object-reference-idor-access-ctrl-',
+            'sensitive-data-exposure-information-disclosure----',
+            'security-misconfiguration-default-credentials-----',
+            'broken-access-control-privilege-escalation-vuln---',
+            'cors-misconfiguration-cross-origin-data-leakage---',
+            'subdomain-takeover-dns-misconfiguration-exploit---',
+            'exposed-admin-panel-unauthorized-access-control---',
+            'default-credentials-weak-authentication-bypass----',
+            'information-disclosure-sensitive-data-exposure----',
+            'command-injection-os-command-execution-exploit----',
+            'ldap-injection-directory-service-manipulation-----',
         ]
         
         sources = [
-            'nuclei-vulnerability-scanner--',  # 30 chars
-            'dalfox-xss-parameter-analysis-',  # 30 chars
-            'sqlmap-sql-injection-testing--',  # 30 chars
-            'crlfuzz-crlf-injection-finder-',  # 30 chars
-            'httpx-web-probe-fingerprint---',  # 30 chars
-            'manual-penetration-testing----',  # 30 chars
-            'burp-suite-professional-scan--',  # 30 chars
-            'owasp-zap-security-scanner----',  # 30 chars
-            'nmap-network-service-scanner--',  # 30 chars
-            'nikto-web-server-scanner------',  # 30 chars
-            'wpscan-wordpress-vuln-scan----',  # 30 chars
-            'dirsearch-directory-brute-----',  # 30 chars
-            'ffuf-web-fuzzer-content-disc--',  # 30 chars
-            'amass-subdomain-enumeration---',  # 30 chars
-            'subfinder-passive-subdomain---',  # 30 chars
-            'masscan-port-scanner-fast-----',  # 30 chars
-            'nessus-vulnerability-assess---',  # 30 chars
-            'qualys-cloud-security-scan----',  # 30 chars
-            'acunetix-web-vuln-scanner-----',  # 30 chars
-            'semgrep-static-code-analysis--',  # 30 chars
+            'nuclei-vulnerability-scanner--',
+            'dalfox-xss-parameter-analysis-',
+            'sqlmap-sql-injection-testing--',
+            'crlfuzz-crlf-injection-finder-',
+            'httpx-web-probe-fingerprint---',
+            'manual-penetration-testing----',
+            'burp-suite-professional-scan--',
+            'owasp-zap-security-scanner----',
         ]
         severities = ['unknown', 'info', 'low', 'medium', 'high', 'critical']
         
-        # 获取域名目标
-        cur.execute("SELECT id, name FROM target WHERE type = 'domain' AND deleted_at IS NULL LIMIT 80")
-        domain_targets = cur.fetchall()
+        # 漏洞路径后缀（会追加到 website URL 后面）
+        vuln_paths = [
+            '/api/users?id=1',
+            '/api/admin/config',
+            '/api/v1/auth/login',
+            '/api/v2/data/export',
+            '/admin/settings',
+            '/debug/console',
+            '/backup/db.sql',
+            '/.env',
+            '/.git/config',
+            '/wp-admin/',
+            '/phpmyadmin/',
+            '/api/graphql',
+            '/swagger.json',
+            '/actuator/health',
+            '/metrics',
+        ]
+        
+        # 获取所有 website 的 URL 和 target_id
+        cur.execute("SELECT id, url, target_id FROM website LIMIT 500")
+        websites = cur.fetchall()
+        
+        if not websites:
+            print("  ⚠ 没有 website 数据，跳过漏洞生成\n")
+            return
         
         count = 0
         batch_data = []
-        for target_id, target_name in domain_targets:
-            num = random.randint(30, 80)
+        for website_id, website_url, target_id in websites:
+            # 每个 website 生成 1-5 个漏洞
+            num_vulns = random.randint(1, 5)
             
-            for idx in range(num):
+            for idx in range(num_vulns):
                 severity = random.choice(severities)
                 cvss_ranges = {
                     'critical': (9.0, 10.0), 'high': (7.0, 8.9), 'medium': (4.0, 6.9),
@@ -1327,22 +1355,22 @@ class TestDataGenerator:
                 cvss_range = cvss_ranges.get(severity, (0.0, 10.0))
                 cvss_score = round(random.uniform(*cvss_range), 1)
                 
-                # 生成固定 245 长度的 URL
-                url = generate_fixed_length_url(target_name, length=245, path_hint=f'vuln/{idx:04d}')
+                # 漏洞 URL = website URL + 漏洞路径
+                # 先移除 website URL 中的查询参数
+                base_url = website_url.split('?')[0]
+                vuln_url = base_url + random.choice(vuln_paths)
                 
-                # 生成固定 300 长度的描述
                 description = generate_fixed_length_text(length=300, text_type='description')
                 
                 raw_output = json.dumps({
                     'template': f'CVE-2024-{random.randint(10000, 99999)}',
                     'matcher_name': 'default',
                     'severity': severity,
-                    'host': target_name,
-                    'matched_at': url,
+                    'matched_at': vuln_url,
                 })
                 
                 batch_data.append((
-                    target_id, url, random.choice(vuln_types), severity,
+                    target_id, vuln_url, random.choice(vuln_types), severity,
                     random.choice(sources), cvss_score, description, raw_output
                 ))
                 count += 1

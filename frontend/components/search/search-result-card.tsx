@@ -83,7 +83,7 @@ export function SearchResultCard({ result, onViewVulnerability }: SearchResultCa
     <Card className="overflow-hidden py-0 gap-0">
       <CardContent className="p-0">
         {/* 顶部 URL 栏 */}
-        <h3 className="font-semibold text-sm px-4 py-2 bg-muted/30 border-b truncate" title={result.url}>
+        <h3 className="font-semibold text-sm px-4 py-2 bg-muted/30 border-b break-all">
           {result.url || result.host}
         </h3>
 
