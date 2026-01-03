@@ -1,24 +1,25 @@
 "use client"
 
 import { useState, useCallback, useMemo, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, AlertCircle, Globe, Link2, ShieldAlert, History, X } from "lucide-react"
+import { Search, AlertCircle, History, X, Download } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
-import { useQuery } from "@tanstack/react-query"
 import { SmartFilterInput, type FilterField } from "@/components/common/smart-filter-input"
 import { SearchPagination } from "./search-pagination"
 import { useAssetSearch } from "@/hooks/use-search"
 import { VulnerabilityDetailDialog } from "@/components/vulnerabilities/vulnerability-detail-dialog"
 import { VulnerabilityService } from "@/services/vulnerability.service"
+import { SearchService } from "@/services/search.service"
 import type { SearchParams, SearchState, Vulnerability as SearchVuln, AssetType } from "@/types/search.types"
 import type { Vulnerability } from "@/types/vulnerability.types"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SearchResultsTable } from "./search-results-table"
 import { SearchResultCard } from "./search-result-card"
 import { Badge } from "@/components/ui/badge"
-import { getAssetStatistics } from "@/services/dashboard.service"
 import { cn } from "@/lib/utils"
 
 // Website 搜索示例
@@ -98,6 +99,7 @@ function removeRecentSearch(query: string) {
 
 export function SearchPage() {
   const t = useTranslations('search')
+  const urlSearchParams = useSearchParams()
   const [searchState, setSearchState] = useState<SearchState>("initial")
   const [query, setQuery] = useState("")
   const [assetType, setAssetType] = useState<AssetType>("website")
@@ -108,18 +110,27 @@ export function SearchPage() {
   const [vulnDialogOpen, setVulnDialogOpen] = useState(false)
   const [, setLoadingVuln] = useState(false)
   const [recentSearches, setRecentSearches] = useState<string[]>([])
-
-  // 获取资产统计数据
-  const { data: stats } = useQuery({
-    queryKey: ['assetStatistics'],
-    queryFn: getAssetStatistics,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  })
+  const [initialQueryProcessed, setInitialQueryProcessed] = useState(false)
 
   // 加载最近搜索记录
   useEffect(() => {
     setRecentSearches(getRecentSearches())
   }, [])
+
+  // 处理 URL 参数中的搜索查询
+  useEffect(() => {
+    if (initialQueryProcessed) return
+    
+    const q = urlSearchParams.get('q')
+    if (q) {
+      setQuery(q)
+      setSearchParams({ q, asset_type: assetType })
+      setSearchState("searching")
+      saveRecentSearch(q)
+      setRecentSearches(getRecentSearches())
+    }
+    setInitialQueryProcessed(true)
+  }, [urlSearchParams, assetType, initialQueryProcessed])
 
   // 根据资产类型选择搜索示例
   const searchExamples = useMemo(() => {
@@ -177,6 +188,25 @@ export function SearchPage() {
     removeRecentSearch(searchQuery)
     setRecentSearches(getRecentSearches())
   }, [])
+
+  // 导出状态
+  const [isExporting, setIsExporting] = useState(false)
+
+  // 导出 CSV（调用后端 API 导出全部结果）
+  const handleExportCSV = useCallback(async () => {
+    if (!searchParams.q) return
+    
+    setIsExporting(true)
+    try {
+      await SearchService.exportCSV(searchParams.q, assetType)
+      toast.success(t('exportSuccess'))
+    } catch (error) {
+      console.error('Export failed:', error)
+      toast.error(t('exportFailed'))
+    } finally {
+      setIsExporting(false)
+    }
+  }, [searchParams.q, assetType, t])
 
   // 当数据加载完成时更新状态
   if (searchState === "searching" && data && !isLoading) {
@@ -289,38 +319,6 @@ export function SearchPage() {
                 ))}
               </div>
 
-              {/* 资产统计 */}
-              {stats && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="grid grid-cols-3 gap-6 mt-4"
-                >
-                  <div className="flex flex-col items-center gap-1 p-4 rounded-xl bg-muted/50">
-                    <Globe className="h-5 w-5 text-muted-foreground mb-1" />
-                    <span className="text-2xl font-bold text-primary">
-                      {stats.totalWebsites.toLocaleString()}
-                    </span>
-                    <span className="text-xs text-muted-foreground">{t('assetTypes.website')}</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1 p-4 rounded-xl bg-muted/50">
-                    <Link2 className="h-5 w-5 text-muted-foreground mb-1" />
-                    <span className="text-2xl font-bold text-primary">
-                      {stats.totalEndpoints.toLocaleString()}
-                    </span>
-                    <span className="text-xs text-muted-foreground">{t('assetTypes.endpoint')}</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1 p-4 rounded-xl bg-muted/50">
-                    <ShieldAlert className="h-5 w-5 text-muted-foreground mb-1" />
-                    <span className="text-2xl font-bold text-primary">
-                      {stats.totalVulns.toLocaleString()}
-                    </span>
-                    <span className="text-xs text-muted-foreground">{t('stats.vulnerabilities')}</span>
-                  </div>
-                </motion.div>
-              )}
-
               {/* 最近搜索 */}
               {recentSearches.length > 0 && (
                 <motion.div
@@ -404,6 +402,15 @@ export function SearchPage() {
                 <span className="text-sm text-muted-foreground whitespace-nowrap">
                   {isFetching ? t('loading') : t('resultsCount', { count: data?.total ?? 0 })}
                 </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportCSV}
+                  disabled={!data?.results || data.results.length === 0 || isExporting}
+                >
+                  <Download className="h-4 w-4 mr-1.5" />
+                  {isExporting ? t('exporting') : t('export')}
+                </Button>
               </div>
             </motion.div>
 

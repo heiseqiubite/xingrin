@@ -15,10 +15,12 @@ NC='\033[0m'
 # 解析参数
 WITH_FRONTEND=true
 DEV_MODE=false
+QUIET_MODE=false
 for arg in "$@"; do
     case $arg in
         --no-frontend) WITH_FRONTEND=false ;;
         --dev) DEV_MODE=true ;;
+        --quiet) QUIET_MODE=true ;;
     esac
 done
 
@@ -154,6 +156,11 @@ echo -e "${GREEN}[OK]${NC} 服务已启动"
 
 # 数据初始化
 ./scripts/init-data.sh
+
+# 静默模式下不显示结果（由调用方显示）
+if [ "$QUIET_MODE" = true ]; then
+    exit 0
+fi
 
 # 获取访问地址
 PUBLIC_HOST=$(grep "^PUBLIC_HOST=" .env 2>/dev/null | cut -d= -f2)

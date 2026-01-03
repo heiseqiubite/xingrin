@@ -3,6 +3,7 @@
 
 提供资产搜索的 REST API 接口：
 - GET /api/assets/search/ - 搜索资产
+- GET /api/assets/search/export/ - 导出搜索结果为 CSV
 
 搜索语法：
 - field="value"     模糊匹配（ILIKE %value%）
@@ -27,10 +28,14 @@
 
 import logging
 import json
+import csv
+from io import StringIO
+from datetime import datetime
 from urllib.parse import urlparse, urlunparse
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.request import Request
+from django.http import StreamingHttpResponse
 from django.db import connection
 
 from apps.common.response_helpers import success_response, error_response
@@ -269,3 +274,127 @@ class AssetSearchView(APIView):
             'totalPages': total_pages,
             'assetType': asset_type,
         })
+
+
+class AssetSearchExportView(APIView):
+    """
+    资产搜索导出 API
+    
+    GET /api/assets/search/export/
+    
+    Query Parameters:
+        q: 搜索查询表达式
+        asset_type: 资产类型 ('website' 或 'endpoint'，默认 'website')
+    
+    Response:
+        CSV 文件流
+    """
+    
+    # 导出数量限制
+    MAX_EXPORT_ROWS = 10000
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.service = AssetSearchService()
+    
+    def _parse_headers(self, headers_data) -> str:
+        """解析响应头为字符串"""
+        if not headers_data:
+            return ''
+        try:
+            headers = json.loads(headers_data)
+            return '; '.join(f'{k}: {v}' for k, v in headers.items())
+        except (json.JSONDecodeError, TypeError):
+            return str(headers_data)
+    
+    def _generate_csv(self, results: list, asset_type: str):
+        """生成 CSV 内容的生成器"""
+        # 定义列
+        if asset_type == 'website':
+            columns = ['url', 'host', 'title', 'status_code', 'content_type', 'content_length', 
+                      'webserver', 'location', 'tech', 'vhost', 'created_at']
+            headers = ['URL', 'Host', 'Title', 'Status', 'Content-Type', 'Content-Length',
+                      'Webserver', 'Location', 'Technologies', 'VHost', 'Created At']
+        else:
+            columns = ['url', 'host', 'title', 'status_code', 'content_type', 'content_length',
+                      'webserver', 'location', 'tech', 'matched_gf_patterns', 'vhost', 'created_at']
+            headers = ['URL', 'Host', 'Title', 'Status', 'Content-Type', 'Content-Length',
+                      'Webserver', 'Location', 'Technologies', 'GF Patterns', 'VHost', 'Created At']
+        
+        # 写入 BOM 和表头
+        output = StringIO()
+        writer = csv.writer(output)
+        
+        # UTF-8 BOM
+        yield '\ufeff'
+        
+        # 表头
+        writer.writerow(headers)
+        yield output.getvalue()
+        output.seek(0)
+        output.truncate(0)
+        
+        # 数据行
+        for result in results:
+            row = []
+            for col in columns:
+                value = result.get(col)
+                if col == 'tech' or col == 'matched_gf_patterns':
+                    # 数组转字符串
+                    row.append('; '.join(value) if value else '')
+                elif col == 'created_at':
+                    # 日期格式化
+                    row.append(value.strftime('%Y-%m-%d %H:%M:%S') if value else '')
+                elif col == 'vhost':
+                    row.append('true' if value else 'false' if value is False else '')
+                else:
+                    row.append(str(value) if value is not None else '')
+            
+            writer.writerow(row)
+            yield output.getvalue()
+            output.seek(0)
+            output.truncate(0)
+    
+    def get(self, request: Request):
+        """导出搜索结果为 CSV"""
+        # 获取搜索查询
+        query = request.query_params.get('q', '').strip()
+        
+        if not query:
+            return error_response(
+                code=ErrorCodes.VALIDATION_ERROR,
+                message='Search query (q) is required',
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # 获取并验证资产类型
+        asset_type = request.query_params.get('asset_type', 'website').strip().lower()
+        if asset_type not in VALID_ASSET_TYPES:
+            return error_response(
+                code=ErrorCodes.VALIDATION_ERROR,
+                message=f'Invalid asset_type. Must be one of: {", ".join(VALID_ASSET_TYPES)}',
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # 获取搜索结果（限制数量）
+        results = self.service.search(query, asset_type, limit=self.MAX_EXPORT_ROWS)
+        
+        if not results:
+            return error_response(
+                code=ErrorCodes.NOT_FOUND,
+                message='No results to export',
+                status_code=status.HTTP_404_NOT_FOUND
+            )
+        
+        # 生成文件名
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f'search_{asset_type}_{timestamp}.csv'
+        
+        # 返回流式响应
+        response = StreamingHttpResponse(
+            self._generate_csv(results, asset_type),
+            content_type='text/csv; charset=utf-8'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        return response

@@ -94,7 +94,7 @@ show_banner() {
     echo -e "${MAGENTA}       ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝${RESET}"
     echo -e ""
     echo -e "${DIM}       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
-    echo -e "${BOLD}         🔒 分布式安全扫描平台  │  一键部署安装程序${RESET}"
+    echo -e "${BOLD}         🔒 分布式安全扫描平台  │  一键部署 (Ubuntu)${RESET}"
     echo -e "${DIM}       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
     echo -e ""
 }
@@ -132,7 +132,6 @@ fi
 
 # 显示标题
 show_banner
-header "XingRin 一键安装脚本 (Ubuntu)"
 info "当前用户: ${BOLD}$REAL_USER${RESET}"
 info "项目路径: ${BOLD}$ROOT_DIR${RESET}"
 info "安装版本: ${BOLD}$APP_VERSION${RESET}"
@@ -324,7 +323,7 @@ check_pg_ivm() {
 # 显示安装总结信息
 show_summary() {
     echo
-    if [ "$1" == "success" ]; then
+    if [ "$1" = "success" ]; then
         # 成功 Banner
         echo -e ""
         echo -e "${GREEN}${BOLD}    ╔═══════════════════════════════════════════════════╗${RESET}"
@@ -378,7 +377,9 @@ show_summary() {
     echo -e "    ${YELLOW}   ⚠  请首次登录后修改密码!${RESET}"
     echo
     
-    if [ "$1" != "success" ]; then
+    if [ "$1" = "success" ]; then
+        :  # 成功模式，不显示后续命令
+    else
         echo -e "${DIM}    ──────────────────────────────────────────────────────${RESET}"
         echo -e "    ${BLUE}🚀 后续命令${RESET}"
         echo -e "    ${DIM}├─${RESET} ./start.sh              ${DIM}# 启动所有服务${RESET}"
@@ -743,7 +744,7 @@ fi
 # 启动服务
 # ==============================================================================
 step "正在启动服务..."
-"$ROOT_DIR/start.sh" $START_ARGS
+"$ROOT_DIR/start.sh" ${START_ARGS} --quiet
 
 # ==============================================================================
 # 完成总结

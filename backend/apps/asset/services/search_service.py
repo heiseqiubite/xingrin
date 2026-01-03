@@ -323,7 +323,8 @@ class AssetSearchService:
     def search(
         self, 
         query: str, 
-        asset_type: AssetType = 'website'
+        asset_type: AssetType = 'website',
+        limit: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """
         搜索资产
@@ -331,6 +332,7 @@ class AssetSearchService:
         Args:
             query: 搜索查询字符串
             asset_type: 资产类型 ('website' 或 'endpoint')
+            limit: 最大返回数量（可选）
         
         Returns:
             List[Dict]: 搜索结果列表
@@ -347,6 +349,10 @@ class AssetSearchService:
             WHERE {where_clause}
             ORDER BY created_at DESC
         """
+        
+        # 添加 LIMIT
+        if limit is not None and limit > 0:
+            sql += f" LIMIT {int(limit)}"
         
         try:
             with connection.cursor() as cursor:

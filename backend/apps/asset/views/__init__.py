@@ -19,7 +19,7 @@ from .asset_views import (
     HostPortMappingSnapshotViewSet,
     VulnerabilitySnapshotViewSet,
 )
-from .search_views import AssetSearchView
+from .search_views import AssetSearchView, AssetSearchExportView
 
 __all__ = [
     'AssetStatisticsViewSet',
@@ -36,4 +36,5 @@ __all__ = [
     'HostPortMappingSnapshotViewSet',
     'VulnerabilitySnapshotViewSet',
     'AssetSearchView',
+    'AssetSearchExportView',
 ]

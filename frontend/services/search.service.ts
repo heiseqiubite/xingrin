@@ -1,5 +1,5 @@
 import { api } from "@/lib/api-client"
-import type { SearchParams, SearchResponse } from "@/types/search.types"
+import type { SearchParams, SearchResponse, AssetType } from "@/types/search.types"
 
 /**
  * 资产搜索 API 服务
@@ -37,5 +37,39 @@ export class SearchService {
       `/assets/search/?${queryParams.toString()}`
     )
     return response.data
+  }
+
+  /**
+   * 导出搜索结果为 CSV
+   * GET /api/assets/search/export/
+   */
+  static async exportCSV(query: string, assetType: AssetType): Promise<void> {
+    const queryParams = new URLSearchParams()
+    queryParams.append('q', query)
+    queryParams.append('asset_type', assetType)
+    
+    const response = await api.get(
+      `/assets/search/export/?${queryParams.toString()}`,
+      { responseType: 'blob' }
+    )
+    
+    // 从响应头获取文件名
+    const contentDisposition = response.headers?.['content-disposition']
+    let filename = `search_${assetType}_${new Date().toISOString().slice(0, 10)}.csv`
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename="?([^"]+)"?/)
+      if (match) filename = match[1]
+    }
+    
+    // 创建下载链接
+    const blob = new Blob([response.data as BlobPart], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 }

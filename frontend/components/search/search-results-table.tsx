@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
-import { useTranslations, useFormatter } from "next-intl"
+import { useFormatter } from "next-intl"
 import type { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { DataTableColumnHeader, UnifiedDataTable } from "@/components/ui/data-table"
@@ -15,7 +15,6 @@ interface SearchResultsTableProps {
 }
 
 export function SearchResultsTable({ results, assetType }: SearchResultsTableProps) {
-  const t = useTranslations('search.table')
   const format = useFormatter()
 
   const formatDate = (dateString: string) => {
@@ -33,9 +32,9 @@ export function SearchResultsTable({ results, assetType }: SearchResultsTablePro
     {
       id: "url",
       accessorKey: "url",
-      meta: { title: t('url') },
+      meta: { title: "URL" },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('url')} />
+        <DataTableColumnHeader column={column} title="URL" />
       ),
       size: 350,
       minSize: 200,
@@ -47,9 +46,9 @@ export function SearchResultsTable({ results, assetType }: SearchResultsTablePro
     {
       id: "host",
       accessorKey: "host",
-      meta: { title: t('host') },
+      meta: { title: "Host" },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('host')} />
+        <DataTableColumnHeader column={column} title="Host" />
       ),
       size: 180,
       minSize: 100,
@@ -61,9 +60,9 @@ export function SearchResultsTable({ results, assetType }: SearchResultsTablePro
     {
       id: "title",
       accessorKey: "title",
-      meta: { title: t('title') },
+      meta: { title: "Title" },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('title')} />
+        <DataTableColumnHeader column={column} title="Title" />
       ),
       size: 150,
       minSize: 100,
@@ -75,9 +74,9 @@ export function SearchResultsTable({ results, assetType }: SearchResultsTablePro
     {
       id: "statusCode",
       accessorKey: "statusCode",
-      meta: { title: t('status') },
+      meta: { title: "Status" },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('status')} />
+        <DataTableColumnHeader column={column} title="Status" />
       ),
       size: 80,
       minSize: 60,
@@ -103,9 +102,9 @@ export function SearchResultsTable({ results, assetType }: SearchResultsTablePro
     {
       id: "technologies",
       accessorKey: "technologies",
-      meta: { title: t('technologies') },
+      meta: { title: "Tech" },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('technologies')} />
+        <DataTableColumnHeader column={column} title="Tech" />
       ),
       size: 180,
       minSize: 120,
@@ -118,9 +117,9 @@ export function SearchResultsTable({ results, assetType }: SearchResultsTablePro
     {
       id: "contentLength",
       accessorKey: "contentLength",
-      meta: { title: t('contentLength') },
+      meta: { title: "Length" },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('contentLength')} />
+        <DataTableColumnHeader column={column} title="Length" />
       ),
       size: 100,
       minSize: 80,
@@ -134,9 +133,9 @@ export function SearchResultsTable({ results, assetType }: SearchResultsTablePro
     {
       id: "location",
       accessorKey: "location",
-      meta: { title: t('location') },
+      meta: { title: "Location" },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('location')} />
+        <DataTableColumnHeader column={column} title="Location" />
       ),
       size: 150,
       minSize: 100,
@@ -148,9 +147,9 @@ export function SearchResultsTable({ results, assetType }: SearchResultsTablePro
     {
       id: "webserver",
       accessorKey: "webserver",
-      meta: { title: t('webserver') },
+      meta: { title: "Server" },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('webserver')} />
+        <DataTableColumnHeader column={column} title="Server" />
       ),
       size: 120,
       minSize: 80,
@@ -162,9 +161,9 @@ export function SearchResultsTable({ results, assetType }: SearchResultsTablePro
     {
       id: "contentType",
       accessorKey: "contentType",
-      meta: { title: t('contentType') },
+      meta: { title: "Type" },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('contentType')} />
+        <DataTableColumnHeader column={column} title="Type" />
       ),
       size: 120,
       minSize: 80,
@@ -176,9 +175,9 @@ export function SearchResultsTable({ results, assetType }: SearchResultsTablePro
     {
       id: "responseBody",
       accessorKey: "responseBody",
-      meta: { title: t('responseBody') },
+      meta: { title: "Body" },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('responseBody')} />
+        <DataTableColumnHeader column={column} title="Body" />
       ),
       size: 300,
       minSize: 200,
@@ -189,9 +188,9 @@ export function SearchResultsTable({ results, assetType }: SearchResultsTablePro
     {
       id: "responseHeaders",
       accessorKey: "responseHeaders",
-      meta: { title: t('responseHeaders') },
+      meta: { title: "Headers" },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('responseHeaders')} />
+        <DataTableColumnHeader column={column} title="Headers" />
       ),
       size: 250,
       minSize: 150,
@@ -210,9 +209,9 @@ export function SearchResultsTable({ results, assetType }: SearchResultsTablePro
     {
       id: "vhost",
       accessorKey: "vhost",
-      meta: { title: t('vhost') },
+      meta: { title: "VHost" },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('vhost')} />
+        <DataTableColumnHeader column={column} title="VHost" />
       ),
       size: 80,
       minSize: 60,
@@ -226,9 +225,9 @@ export function SearchResultsTable({ results, assetType }: SearchResultsTablePro
     {
       id: "createdAt",
       accessorKey: "createdAt",
-      meta: { title: t('createdAt') },
+      meta: { title: "Created" },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('createdAt')} />
+        <DataTableColumnHeader column={column} title="Created" />
       ),
       size: 150,
       minSize: 120,
@@ -239,16 +238,16 @@ export function SearchResultsTable({ results, assetType }: SearchResultsTablePro
         return <span className="text-sm">{formatDate(createdAt)}</span>
       },
     },
-  ], [t, formatDate])
+  ], [formatDate])
 
   // Endpoint 特有列
   const endpointColumns: ColumnDef<SearchResult, unknown>[] = useMemo(() => [
     {
       id: "matchedGfPatterns",
       accessorKey: "matchedGfPatterns",
-      meta: { title: t('gfPatterns') },
+      meta: { title: "GF Patterns" },
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('gfPatterns')} />
+        <DataTableColumnHeader column={column} title="GF Patterns" />
       ),
       size: 150,
       minSize: 100,
@@ -259,7 +258,7 @@ export function SearchResultsTable({ results, assetType }: SearchResultsTablePro
         return <ExpandableTagList items={patterns} maxLines={2} variant="secondary" />
       },
     },
-  ], [t])
+  ], [])
 
   // 根据资产类型组合列
   const columns = useMemo(() => {

@@ -326,6 +326,10 @@
     "noResultsHint": "请尝试调整搜索条件",
     "vulnLoadError": "加载漏洞详情失败",
     "recentSearches": "最近搜索",
+    "export": "导出",
+    "exporting": "导出中...",
+    "exportSuccess": "导出成功",
+    "exportFailed": "导出失败",
     "stats": {
       "vulnerabilities": "漏洞"
     },
@@ -1970,6 +1974,16 @@
       "bulkAdd": "批量添加",
       "formatInvalid": "格式无效"
     }
+  },
+  "globalSearch": {
+    "search": "搜索",
+    "placeholder": "搜索资产... (host=\"api\" && tech=\"nginx\")",
+    "noResults": "未找到结果",
+    "searchFor": "搜索",
+    "recent": "最近搜索",
+    "quickSearch": "快捷搜索",
+    "hint": "支持 FOFA 风格语法",
+    "toSearch": "搜索"
   },
   "errors": {
     "unknown": "操作失败，请稍后重试",

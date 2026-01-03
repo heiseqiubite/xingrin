@@ -326,6 +326,10 @@
     "noResultsHint": "Try adjusting your search criteria",
     "vulnLoadError": "Failed to load vulnerability details",
     "recentSearches": "Recent Searches",
+    "export": "Export",
+    "exporting": "Exporting...",
+    "exportSuccess": "Export successful",
+    "exportFailed": "Export failed",
     "stats": {
       "vulnerabilities": "Vulnerabilities"
     },
@@ -1970,6 +1974,16 @@
       "bulkAdd": "Bulk Add",
       "formatInvalid": "Invalid format"
     }
+  },
+  "globalSearch": {
+    "search": "Search",
+    "placeholder": "Search assets... (host=\"api\" && tech=\"nginx\")",
+    "noResults": "No results found",
+    "searchFor": "Search for",
+    "recent": "Recent Searches",
+    "quickSearch": "Quick Search",
+    "hint": "Supports FOFA-style syntax",
+    "toSearch": "to search"
   },
   "errors": {
     "unknown": "Operation failed, please try again later",

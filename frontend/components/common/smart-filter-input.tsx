@@ -381,9 +381,9 @@ export function SmartFilterInput({
 
   return (
     <div className={className}>
-      <Popover open={open} onOpenChange={setOpen} modal={false}>
-        <PopoverAnchor asChild>
-          <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
+        <Popover open={open} onOpenChange={setOpen} modal={false}>
+          <PopoverAnchor asChild>
             <div className="relative flex-1">
               <Input
                 ref={inputRef}
@@ -420,11 +420,7 @@ export function SmartFilterInput({
                 </div>
               )}
             </div>
-            <Button variant="outline" size="sm" onClick={handleSearch}>
-              <IconSearch className="h-4 w-4" />
-            </Button>
-          </div>
-        </PopoverAnchor>
+          </PopoverAnchor>
         <PopoverContent
           className="w-[var(--radix-popover-trigger-width)] p-0"
           align="start"
@@ -523,6 +519,10 @@ export function SmartFilterInput({
           </Command>
         </PopoverContent>
       </Popover>
+        <Button variant="outline" size="sm" onClick={handleSearch}>
+          <IconSearch className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   )
 }
