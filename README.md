@@ -220,8 +220,7 @@ sudo ./uninstall.sh
 - 💡 **有新想法，比如UI设计，功能设计等** 欢迎点击右边链接进行提交建议 [Issue](https://github.com/yyhuni/xingrin/issues)
 
 ## 📧 联系
-- 目前版本就我个人使用，可能会有很多边界问题
-- 如有问题，建议，其他，优先提交[Issue](https://github.com/yyhuni/xingrin/issues)，也可以直接给我的公众号发消息，我都会回复的
+- 如有问题，建议，其他，可以直接给我的公众号发消息，我都会回复的
 
 - 微信公众号: **塔罗安全学苑**
 
