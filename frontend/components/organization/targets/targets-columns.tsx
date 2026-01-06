@@ -132,7 +132,7 @@ function TargetNameCell({
   return (
     <div className="group flex items-start gap-1 flex-1 min-w-0">
       <button
-        onClick={() => navigate(`/target/${targetId}/website/`)}
+        onClick={() => navigate(`/target/${targetId}/overview/`)}
         className="text-sm font-medium hover:text-primary hover:underline underline-offset-2 transition-colors cursor-pointer text-left break-all leading-relaxed whitespace-normal"
       >
         {name}
@@ -251,7 +251,7 @@ export const createTargetColumns = ({
     cell: ({ row }) => (
       <TargetRowActions
         target={row.original}
-        onView={() => navigate(`/target/${row.original.id}/website/`)}
+        onView={() => navigate(`/target/${row.original.id}/overview/`)}
         onDelete={() => handleDelete(row.original)}
         t={t}
       />

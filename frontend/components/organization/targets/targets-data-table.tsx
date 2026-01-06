@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { IconSearch, IconLoader2 } from "@tabler/icons-react"
+import { IconSearch, IconLoader2, IconPlus } from "@tabler/icons-react"
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -74,6 +74,7 @@ export function TargetsDataTable({
   // 自定义添加按钮（支持 onAddHover）
   const addButton = onAddNew ? (
     <Button onClick={onAddNew} onMouseEnter={onAddHover} size="sm">
+      <IconPlus className="h-4 w-4" />
       {addButtonText || tTarget("createTarget")}
     </Button>
   ) : undefined
