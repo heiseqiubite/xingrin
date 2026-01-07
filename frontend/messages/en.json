@@ -168,7 +168,7 @@
       "pause": "Pause",
       "resume": "Resume",
       "retry": "Retry",
-      "snapshot": "Snapshot",
+      "snapshot": "Details",
       "openMenu": "Open menu",
       "selectAll": "Select all",
       "deselectAll": "Deselect all",
@@ -723,6 +723,49 @@
       "loadFailed": "Failed to load scan history",
       "retry": "Retry",
       "taskId": "Scan Task ID: {id}",
+      "breadcrumb": {
+        "scanHistory": "Scan History"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "assets": "Assets",
+        "screenshots": "Screenshots",
+        "vulnerabilities": "Vulnerabilities"
+      },
+      "status": {
+        "completed": "Completed",
+        "running": "Running",
+        "failed": "Failed",
+        "pending": "Pending",
+        "cancelled": "Cancelled",
+        "initiated": "Waiting"
+      },
+      "overview": {
+        "loadError": "Failed to load scan data",
+        "startedAt": "Started",
+        "duration": "Duration",
+        "assetsTitle": "Discovered Assets",
+        "vulnerabilitiesTitle": "Vulnerabilities",
+        "stagesTitle": "Scan Progress",
+        "logsTitle": "Scan Logs",
+        "noStages": "No stage progress available",
+        "totalFound": "total found",
+        "viewAll": "View All",
+        "cards": {
+          "websites": "Websites",
+          "subdomains": "Subdomains",
+          "ips": "IP Addresses",
+          "urls": "URLs",
+          "directories": "Directories",
+          "vulnerabilities": "Vulnerabilities"
+        },
+        "severity": {
+          "critical": "Critical",
+          "high": "High",
+          "medium": "Medium",
+          "low": "Low"
+        }
+      },
       "stats": {
         "totalScans": "Total Scans",
         "running": "Running",

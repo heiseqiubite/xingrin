@@ -17,7 +17,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
+DOCKER_DIR="$(dirname "$SCRIPT_DIR")"
+cd "$DOCKER_DIR"
 
 # 颜色输出
 GREEN='\033[0;32m'
@@ -33,7 +34,9 @@ log_step() { echo -e "  ${CYAN}>>${NC} $1"; }
 
 # 检查服务是否运行
 check_server() {
-    if ! docker compose ps --status running 2>/dev/null | grep -q "server"; then
+    # 使用 docker compose ps 的 --format 选项获取服务状态
+    # 这种方式不依赖容器名称格式，只检查服务名
+    if ! docker compose ps --format '{{.Service}} {{.State}}' 2>/dev/null | grep -E "^server\s+running" > /dev/null; then
         echo "Server 容器未运行，跳过数据初始化"
         return 1
     fi

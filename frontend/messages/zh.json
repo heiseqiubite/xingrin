@@ -168,7 +168,7 @@
       "pause": "暂停",
       "resume": "继续",
       "retry": "重试",
-      "snapshot": "快照",
+      "snapshot": "详情",
       "openMenu": "打开菜单",
       "selectAll": "全选",
       "deselectAll": "取消全选",
@@ -723,6 +723,49 @@
       "loadFailed": "加载扫描历史失败",
       "retry": "重试",
       "taskId": "扫描任务 ID：{id}",
+      "breadcrumb": {
+        "scanHistory": "扫描历史"
+      },
+      "tabs": {
+        "overview": "概览",
+        "assets": "资产",
+        "screenshots": "截图",
+        "vulnerabilities": "漏洞"
+      },
+      "status": {
+        "completed": "已完成",
+        "running": "扫描中",
+        "failed": "失败",
+        "pending": "等待中",
+        "cancelled": "已取消",
+        "initiated": "等待中"
+      },
+      "overview": {
+        "loadError": "加载扫描数据失败",
+        "startedAt": "开始时间",
+        "duration": "耗时",
+        "assetsTitle": "发现的资产",
+        "vulnerabilitiesTitle": "漏洞统计",
+        "stagesTitle": "扫描进度",
+        "logsTitle": "扫描日志",
+        "noStages": "暂无阶段进度",
+        "totalFound": "个漏洞",
+        "viewAll": "查看全部",
+        "cards": {
+          "websites": "网站",
+          "subdomains": "子域名",
+          "ips": "IP 地址",
+          "urls": "URLs",
+          "directories": "目录",
+          "vulnerabilities": "漏洞"
+        },
+        "severity": {
+          "critical": "严重",
+          "high": "高危",
+          "medium": "中危",
+          "low": "低危"
+        }
+      },
       "stats": {
         "totalScans": "总扫描数",
         "running": "进行中",

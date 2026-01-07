@@ -639,19 +639,19 @@ class TestDataGenerator:
                         target_id, engine_ids, engine_names, yaml_configuration, status, worker_id, progress, current_stage,
                         results_dir, error_message, container_ids, stage_progress,
                         cached_subdomains_count, cached_websites_count, cached_endpoints_count,
-                        cached_ips_count, cached_directories_count, cached_vulns_total,
+                        cached_ips_count, cached_directories_count, cached_screenshots_count, cached_vulns_total,
                         cached_vulns_critical, cached_vulns_high, cached_vulns_medium, cached_vulns_low,
                         created_at, stopped_at, deleted_at
                     ) VALUES (
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         NOW() - INTERVAL '%s days', %s, NULL
                     )
                     RETURNING id
                 """, (
                     target_id, selected_engine_ids, json.dumps(selected_engine_names), '', status, worker_id, progress, stage,
                     f'/app/results/scan_{target_id}_{random.randint(1000, 9999)}', error_msg, '{}', '{}',
-                    subdomains, websites, endpoints, ips, directories, vulns_total,
+                    subdomains, websites, endpoints, ips, directories, 0, vulns_total,
                     vulns_critical, vulns_high, vulns_medium, vulns_low,
                     days_ago,
                     datetime.now() - timedelta(days=days_ago, hours=random.randint(0, 23)) if status in ['completed', 'failed', 'cancelled'] else None
