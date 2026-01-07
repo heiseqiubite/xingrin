@@ -732,7 +732,9 @@ def subdomain_discovery_flow(
         executed_tasks.append('save_domains')
         
         # 记录 Flow 完成
-        logger.info("="*60 + "\n✓ 子域名发现扫描完成\n" + "="*60)
+        logger.info("="*60)
+        logger.info("✓ 子域名发现扫描完成")
+        logger.info("="*60)
         user_log(scan_id, "subdomain_discovery", f"subdomain_discovery completed: found {processed_domains} subdomains")
         
         return {

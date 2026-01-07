@@ -99,15 +99,13 @@ def initiate_scan_flow(
             raise ValueError("engine_name is required")
         
         
-        logger.info(
-            "="*60 + "\n" +
-            "开始初始化扫描任务\n" +
-            f"  Scan ID: {scan_id}\n" +
-            f"  Target: {target_name}\n" +
-            f"  Engine: {engine_name}\n" +
-            f"  Workspace: {scan_workspace_dir}\n" +
-            "="*60
-        )
+        logger.info("="*60)
+        logger.info("开始初始化扫描任务")
+        logger.info(f"Scan ID: {scan_id}")
+        logger.info(f"Target: {target_name}")
+        logger.info(f"Engine: {engine_name}")
+        logger.info(f"Workspace: {scan_workspace_dir}")
+        logger.info("="*60)
         
         # ==================== Task 1: 创建 Scan 工作空间 ====================
         scan_workspace_path = setup_scan_workspace(scan_workspace_dir)
@@ -126,11 +124,9 @@ def initiate_scan_flow(
         # FlowOrchestrator 已经解析了所有工具配置
         enabled_tools_by_type = orchestrator.enabled_tools_by_type
         
-        logger.info(
-            f"执行计划生成成功：\n"
-            f"  扫描类型: {' → '.join(orchestrator.scan_types)}\n"
-            f"  总共 {len(orchestrator.scan_types)} 个 Flow"
-        )
+        logger.info("执行计划生成成功")
+        logger.info(f"扫描类型: {' → '.join(orchestrator.scan_types)}")
+        logger.info(f"总共 {len(orchestrator.scan_types)} 个 Flow")
         
         # ==================== 初始化阶段进度 ====================
         # 在解析完配置后立即初始化，此时已有完整的 scan_types 列表
@@ -209,9 +205,13 @@ def initiate_scan_flow(
         for mode, enabled_flows in orchestrator.get_execution_stages():
             if mode == 'sequential':
                 # 顺序执行
-                logger.info(f"\n{'='*60}\n顺序执行阶段: {', '.join(enabled_flows)}\n{'='*60}")
+                logger.info("="*60)
+                logger.info(f"顺序执行阶段: {', '.join(enabled_flows)}")
+                logger.info("="*60)
                 for scan_type, flow_func, flow_specific_kwargs in get_valid_flows(enabled_flows):
-                    logger.info(f"\n{'='*60}\n执行 Flow: {scan_type}\n{'='*60}")
+                    logger.info("="*60)
+                    logger.info(f"执行 Flow: {scan_type}")
+                    logger.info("="*60)
                     try:
                         result = flow_func(**flow_specific_kwargs)
                         record_flow_result(scan_type, result=result)
@@ -220,12 +220,16 @@ def initiate_scan_flow(
                     
             elif mode == 'parallel':
                 # 并行执行阶段：通过 Task 包装子 Flow，并使用 Prefect TaskRunner 并发运行
-                logger.info(f"\n{'='*60}\n并行执行阶段: {', '.join(enabled_flows)}\n{'='*60}")
+                logger.info("="*60)
+                logger.info(f"并行执行阶段: {', '.join(enabled_flows)}")
+                logger.info("="*60)
                 futures = []
 
                 # 提交所有并行子 Flow 任务
                 for scan_type, flow_func, flow_specific_kwargs in get_valid_flows(enabled_flows):
-                    logger.info(f"\n{'='*60}\n提交并行子 Flow 任务: {scan_type}\n{'='*60}")
+                    logger.info("="*60)
+                    logger.info(f"提交并行子 Flow 任务: {scan_type}")
+                    logger.info("="*60)
                     future = _run_subflow_task.submit(
                         scan_type=scan_type,
                         flow_func=flow_func,
@@ -246,12 +250,10 @@ def initiate_scan_flow(
                             record_flow_result(scan_type, error=e)
 
         # ==================== 完成 ====================
-        logger.info(
-            "="*60 + "\n" +
-            "✓ 扫描任务初始化完成\n" +
-            f"  执行的 Flow: {', '.join(executed_flows)}\n" +
-            "="*60
-        )
+        logger.info("="*60)
+        logger.info("✓ 扫描任务初始化完成")
+        logger.info(f"执行的 Flow: {', '.join(executed_flows)}")
+        logger.info("="*60)
         
         # ==================== 返回结果 ====================
         return {
