@@ -45,7 +45,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /app
 
 # 1. 安装基础工具和 Python
-RUN apt-get update && apt-get install -y \
+# 注意：ARM64 使用 ports.ubuntu.com，可能存在镜像同步延迟，需要重试机制
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python3-venv \
@@ -64,6 +66,9 @@ RUN apt-get update && apt-get install -y \
     libnss3 \
     libxss1 \
     libasound2t64 \
+    || (rm -rf /var/lib/apt/lists/* && apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-pip python3-venv pipx git curl wget unzip jq tmux nmap masscan libpcap-dev \
+    ca-certificates fonts-liberation libnss3 libxss1 libasound2t64) \
     && rm -rf /var/lib/apt/lists/*
 
 # 安装 Chromium（通过 Playwright 安装，支持 ARM64 和 AMD64）
