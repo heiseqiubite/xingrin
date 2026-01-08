@@ -2,7 +2,7 @@
 # ============================================
 # XingRin 远程节点安装脚本
 # 用途：安装 Docker 环境 + 预拉取镜像
-# 支持：Ubuntu / Debian
+# 支持：Ubuntu / Debian / Kali
 # 
 # 架构说明：
 # 1. 安装 Docker 环境
@@ -101,8 +101,8 @@ detect_os() {
         exit 1
     fi
     
-    if [[ "$OS" != "ubuntu" && "$OS" != "debian" ]]; then
-        log_error "仅支持 Ubuntu/Debian 系统"
+    if [[ "$OS" != "ubuntu" && "$OS" != "debian" && "$OS" != "kali" ]]; then
+        log_error "仅支持 Ubuntu/Debian/Kali 系统"
         exit 1
     fi
 }
