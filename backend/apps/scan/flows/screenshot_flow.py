@@ -5,6 +5,10 @@
 1. 从数据库获取 URL 列表（websites 和/或 endpoints）
 2. 批量截图并保存快照
 3. 同步到资产表
+
+支持两种模式：
+1. 传统模式（向后兼容）：使用 target_id 从数据库获取 URL
+2. Provider 模式：使用 TargetProvider 从任意数据源获取 URL
 """
 
 # Django 环境初始化
@@ -12,6 +16,7 @@ from apps.common.prefect_django_setup import setup_django_for_prefect
 
 import logging
 from pathlib import Path
+from typing import Optional
 from prefect import flow
 
 from apps.scan.tasks.screenshot import capture_screenshots_task
@@ -25,6 +30,7 @@ from apps.scan.services.target_export_service import (
     get_urls_with_fallback,
     DataSource,
 )
+from apps.scan.providers import TargetProvider
 
 logger = logging.getLogger(__name__)
 
@@ -88,10 +94,15 @@ def screenshot_flow(
     target_name: str,
     target_id: int,
     scan_workspace_dir: str,
-    enabled_tools: dict
+    enabled_tools: dict,
+    provider: Optional[TargetProvider] = None
 ) -> dict:
     """
     截图 Flow
+    
+    支持两种模式：
+    1. 传统模式（向后兼容）：使用 target_id 从数据库获取 URL
+    2. Provider 模式：使用 TargetProvider 从任意数据源获取 URL
     
     工作流程：
         Step 1: 解析配置
@@ -105,6 +116,7 @@ def screenshot_flow(
         target_id: 目标 ID
         scan_workspace_dir: 扫描工作空间目录
         enabled_tools: 启用的工具配置
+        provider: TargetProvider 实例（新模式，可选）
     
     Returns:
         dict: {
@@ -124,6 +136,7 @@ def screenshot_flow(
             f"  Scan ID: {scan_id}\n" +
             f"  Target: {target_name}\n" +
             f"  Workspace: {scan_workspace_dir}\n" +
+            f"  Mode: {'Provider' if provider else 'Legacy'}\n" +
             "="*60
         )
         
@@ -136,14 +149,31 @@ def screenshot_flow(
         
         logger.info("截图配置 - 并发: %d, URL来源: %s", concurrency, url_sources)
         
-        # Step 2: 使用统一服务收集 URL（带黑名单过滤和回退）
-        data_sources = _map_url_sources_to_data_sources(url_sources)
-        result = get_urls_with_fallback(target_id, sources=data_sources)
+        # Step 2: 收集 URL 列表
+        if provider is not None:
+            # Provider 模式：使用 TargetProvider 获取 URL
+            logger.info("使用 Provider 模式获取 URL - Provider: %s", type(provider).__name__)
+            urls = list(provider.iter_urls())
+            
+            # 应用黑名单过滤（如果有）
+            blacklist_filter = provider.get_blacklist_filter()
+            if blacklist_filter:
+                urls = [url for url in urls if blacklist_filter.is_allowed(url)]
+            
+            source_info = 'provider'
+            tried_sources = ['provider']
+        else:
+            # 传统模式：使用统一服务收集 URL（带黑名单过滤和回退）
+            data_sources = _map_url_sources_to_data_sources(url_sources)
+            result = get_urls_with_fallback(target_id, sources=data_sources)
+            
+            urls = result['urls']
+            source_info = result['source']
+            tried_sources = result['tried_sources']
         
-        urls = result['urls']
         logger.info(
             "URL 收集完成 - 来源: %s, 数量: %d, 尝试过: %s",
-            result['source'], result['total_count'], result['tried_sources']
+            source_info, len(urls), tried_sources
         )
         
         if not urls:
@@ -159,7 +189,7 @@ def screenshot_flow(
                 'synced': 0
             }
         
-        user_log(scan_id, "screenshot", f"Found {len(urls)} URLs to capture (source: {result['source']})")
+        user_log(scan_id, "screenshot", f"Found {len(urls)} URLs to capture (source: {source_info})")
         
         # Step 3: 批量截图
         logger.info("Step 3: 批量截图 - %d 个 URL", len(urls))

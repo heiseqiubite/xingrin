@@ -64,6 +64,7 @@ backend/.env.local
 .coverage
 htmlcov/
 *.cover
+.hypothesis/
 
 # ============================
 # 后端 (Go) 相关

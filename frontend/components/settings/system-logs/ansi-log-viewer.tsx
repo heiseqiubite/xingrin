@@ -88,7 +88,7 @@ function highlightSearch(html: string, query: string): string {
   
   // 转义正则特殊字符
   const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-  const regex = new RegExp(`(${escapedQuery})`, "gi")
+  const regex = new RegExp(`(${escapedQuery})`, "giu")
   
   // 在标签外的文本中高亮关键词
   return html.replace(/(<[^>]+>)|([^<]+)/g, (match, tag, text) => {
