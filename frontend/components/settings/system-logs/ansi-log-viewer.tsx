@@ -85,16 +85,24 @@ function colorizeLogContent(content: string): string {
 // 高亮搜索关键词
 function highlightSearch(html: string, query: string): string {
   if (!query.trim()) return html
-  
+
+  // `ansi-to-html` 在 `escapeXML: true` 时，会把非 ASCII 字符（如中文）转成实体：
+  // 例如 "中文" => "&#x4E2D;&#x6587;"。
+  // 因此这里需要用同样的转义规则来生成可匹配的搜索串。
+  const escapedQueryForHtml = ansiConverter.toHtml(query)
+
   // 转义正则特殊字符
-  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  const escapedQuery = escapedQueryForHtml.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
   const regex = new RegExp(`(${escapedQuery})`, "giu")
-  
+
   // 在标签外的文本中高亮关键词
   return html.replace(/(<[^>]+>)|([^<]+)/g, (match, tag, text) => {
     if (tag) return tag
     if (text) {
-      return text.replace(regex, '<mark style="background:#fbbf24;color:#1e1e1e;border-radius:2px;padding:0 2px">$1</mark>')
+      return text.replace(
+        regex,
+        '<mark style="background:#fbbf24;color:#1e1e1e;border-radius:2px;padding:0 2px">$1</mark>'
+      )
     }
     return match
   })

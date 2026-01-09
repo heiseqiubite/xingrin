@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import {
   ColumnFiltersState,
   ColumnSizingState,
@@ -17,6 +17,7 @@ import {
   VisibilityState,
   Updater,
 } from "@tanstack/react-table"
+import { calculateColumnWidths } from "@/lib/table-utils"
 import {
   IconChevronDown,
   IconLayoutColumns,
@@ -145,8 +146,12 @@ export function UnifiedDataTable<TData>({
   // Styles
   className,
   tableClassName,
+  
+  // Auto column sizing
+  enableAutoColumnSizing = false,
 }: UnifiedDataTableProps<TData>) {
   const tActions = useTranslations("common.actions")
+  const locale = useLocale()
   
   // Internal state
   const [internalRowSelection, setInternalRowSelection] = React.useState<Record<string, boolean>>({})
@@ -154,6 +159,7 @@ export function UnifiedDataTable<TData>({
   const [internalSorting, setInternalSorting] = React.useState<SortingState>(defaultSorting)
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({})
+  const [autoSizingCalculated, setAutoSizingCalculated] = React.useState(false)
   const [internalPagination, setInternalPagination] = React.useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -231,6 +237,41 @@ export function UnifiedDataTable<TData>({
   const validData = React.useMemo(() => {
     return (data || []).filter(item => item && typeof getRowId(item) !== 'undefined')
   }, [data, getRowId])
+
+  // Auto column sizing: calculate optimal widths based on content
+  React.useEffect(() => {
+    if (!enableAutoColumnSizing || autoSizingCalculated || validData.length === 0) {
+      return
+    }
+    
+    // Build header labels from column meta
+    const headerLabels: Record<string, string> = {}
+    for (const col of columns) {
+      const colDef = col as { accessorKey?: string; id?: string; meta?: { title?: string } }
+      const colId = colDef.accessorKey || colDef.id
+      if (colId && colDef.meta?.title) {
+        headerLabels[colId] = colDef.meta.title
+      }
+    }
+    
+    const calculatedWidths = calculateColumnWidths({
+      data: validData as Record<string, unknown>[],
+      columns: columns as Array<{
+        accessorKey?: string
+        id?: string
+        size?: number
+        minSize?: number
+        maxSize?: number
+      }>,
+      headerLabels,
+      locale,
+    })
+    
+    if (Object.keys(calculatedWidths).length > 0) {
+      setColumnSizing(calculatedWidths)
+      setAutoSizingCalculated(true)
+    }
+  }, [enableAutoColumnSizing, autoSizingCalculated, validData, columns])
 
   // Create table instance
   const table = useReactTable({

@@ -136,6 +136,10 @@ export interface UnifiedDataTableProps<TData> {
   // Styling
   className?: string
   tableClassName?: string
+  
+  // Auto column sizing
+  /** Enable automatic column width calculation based on content */
+  enableAutoColumnSizing?: boolean
 }
 
 /**

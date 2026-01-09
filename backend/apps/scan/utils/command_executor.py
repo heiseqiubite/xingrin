@@ -354,10 +354,13 @@ class CommandExecutor:
                 if log_file_path:
                     error_output = self._read_log_tail(log_file_path, max_lines=MAX_LOG_TAIL_LINES)
                 logger.warning(
-                    "扫描工具 %s 返回非零状态码: %d (执行时间: %.2f秒)%s",
-                    tool_name, returncode, duration,
-                    f"\n错误输出:\n{error_output}" if error_output else ""
+                    "扫描工具 %s 返回非零状态码: %d (执行时间: %.2f秒)",
+                    tool_name, returncode, duration
                 )
+                if error_output:
+                    for line in error_output.strip().split('\n'):
+                        if line.strip():
+                            logger.warning("%s", line)
             else:
                 logger.info("✓ 扫描工具 %s 执行完成 (执行时间: %.2f秒)", tool_name, duration)
             

@@ -78,5 +78,9 @@ export function ScanLogList({ logs, loading }: ScanLogListProps) {
     )
   }
   
-  return <AnsiLogViewer content={content} />
+  return (
+    <div className="h-full">
+      <AnsiLogViewer content={content} />
+    </div>
+  )
 }

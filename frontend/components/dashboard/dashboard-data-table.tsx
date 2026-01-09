@@ -365,6 +365,7 @@ export function DashboardDataTable() {
               columns={scanColumns}
               getRowId={(row) => String(row.id)}
               enableRowSelection={false}
+              enableAutoColumnSizing
               pagination={scanPagination}
               onPaginationChange={setScanPagination}
               paginationInfo={scanPaginationInfo}

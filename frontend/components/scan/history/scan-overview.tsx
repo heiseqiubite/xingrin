@@ -84,6 +84,15 @@ function formatStageDuration(seconds?: number): string | undefined {
   return secs > 0 ? `${minutes}m ${secs}s` : `${minutes}m`
 }
 
+// Status priority for sorting (lower = higher priority)
+const STAGE_STATUS_PRIORITY: Record<StageStatus, number> = {
+  running: 0,
+  pending: 1,
+  completed: 2,
+  failed: 3,
+  cancelled: 4,
+}
+
 export function ScanOverview({ scanId }: ScanOverviewProps) {
   const t = useTranslations("scan.history.overview")
   const tStatus = useTranslations("scan.history.status")
@@ -326,7 +335,16 @@ export function ScanOverview({ scanId }: ScanOverviewProps) {
               {scan.stageProgress && Object.keys(scan.stageProgress).length > 0 ? (
                 <div className="space-y-1 flex-1 min-h-0 overflow-y-auto pr-1">
                   {Object.entries(scan.stageProgress)
-                    .sort(([, a], [, b]) => ((a as any).order ?? 0) - ((b as any).order ?? 0))
+                    .sort(([, a], [, b]) => {
+                      const progressA = a as any
+                      const progressB = b as any
+                      const priorityA = STAGE_STATUS_PRIORITY[progressA.status as StageStatus] ?? 99
+                      const priorityB = STAGE_STATUS_PRIORITY[progressB.status as StageStatus] ?? 99
+                      if (priorityA !== priorityB) {
+                        return priorityA - priorityB
+                      }
+                      return (progressA.order ?? 0) - (progressB.order ?? 0)
+                    })
                     .map(([stageName, progress]) => {
                       const stageProgress = progress as any
                       const isRunning = stageProgress.status === "running"
@@ -346,9 +364,6 @@ export function ScanOverview({ scanId }: ScanOverviewProps) {
                             <span className={cn("truncate", isRunning && "font-medium text-foreground")}>
                               {tProgress(`stages.${stageName}`)}
                             </span>
-                            {isRunning && (
-                              <span className="text-[10px] text-[#d29922] shrink-0">←</span>
-                            )}
                           </div>
                           <span className="text-xs text-muted-foreground font-mono shrink-0 ml-2">
                             {stageProgress.status === "completed" && stageProgress.duration

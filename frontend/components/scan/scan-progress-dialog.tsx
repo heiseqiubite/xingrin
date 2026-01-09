@@ -280,7 +280,9 @@ export function ScanProgressDialog({
           </div>
         ) : (
           /* Log list */
-          <ScanLogList logs={logs} loading={logsLoading} />
+          <div className="h-[300px] overflow-hidden rounded-md">
+            <ScanLogList logs={logs} loading={logsLoading} />
+          </div>
         )}
       </DialogContent>
     </Dialog>
@@ -350,13 +352,29 @@ function getStageResultCount(stageName: string, summary: ScanRecord["summary"]):
  * Stage names come directly from engine_config keys, no mapping needed
  * Stage order follows the order field, consistent with Flow execution order
  */
+// Status priority for sorting (lower = higher priority)
+const STATUS_PRIORITY: Record<StageStatus, number> = {
+  running: 0,
+  pending: 1,
+  completed: 2,
+  failed: 3,
+  cancelled: 4,
+}
+
 export function buildScanProgressData(scan: ScanRecord): ScanProgressData {
   const stages: StageDetail[] = []
   
   if (scan.stageProgress) {
-    // Sort by order then iterate
+    // Sort by status priority first, then by order
     const sortedEntries = Object.entries(scan.stageProgress)
-      .sort(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0))
+      .sort(([, a], [, b]) => {
+        const priorityA = STATUS_PRIORITY[a.status] ?? 99
+        const priorityB = STATUS_PRIORITY[b.status] ?? 99
+        if (priorityA !== priorityB) {
+          return priorityA - priorityB
+        }
+        return (a.order ?? 0) - (b.order ?? 0)
+      })
     
     for (const [stageName, progress] of sortedEntries) {
       const resultCount = progress.status === "completed" 

@@ -99,6 +99,8 @@ export function ScanHistoryDataTable({
       hideToolbar={hideToolbar}
       // Empty state
       emptyMessage={t("noData")}
+      // Auto column sizing
+      enableAutoColumnSizing
       // Custom search box
       toolbarLeft={
         <div className="flex items-center space-x-2">
