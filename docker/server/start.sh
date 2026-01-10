@@ -10,7 +10,7 @@ python manage.py migrate --noinput
 echo "  ✓ 数据库迁移完成"
 
 echo "  [1.1/3] 初始化默认扫描引擎..."
-python manage.py init_default_engine
+python manage.py init_default_engine --force
 echo "  ✓ 默认扫描引擎已就绪"
 
 echo "  [1.2/3] 初始化默认目录字典..."

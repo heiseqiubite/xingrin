@@ -2,8 +2,9 @@
 初始化默认扫描引擎
 
 用法：
-  python manage.py init_default_engine          # 只创建不存在的引擎（不覆盖已有）
-  python manage.py init_default_engine --force  # 强制覆盖所有引擎配置
+  python manage.py init_default_engine              # 只创建不存在的引擎（不覆盖已有）
+  python manage.py init_default_engine --force      # 强制覆盖所有引擎配置
+  python manage.py init_default_engine --force-sub  # 只覆盖子引擎，保留 full scan
   
   cd /root/my-vulun-scan/docker
   docker compose exec server python backend/manage.py init_default_engine --force
@@ -12,6 +13,7 @@
 - 读取 engine_config_example.yaml 作为默认配置
 - 创建 full scan（默认引擎）+ 各扫描类型的子引擎
 - 默认不覆盖已有配置，加 --force 才会覆盖
+- 加 --force-sub 只覆盖子引擎配置，保留用户自定义的 full scan
 """
 
 from django.core.management.base import BaseCommand
@@ -30,11 +32,18 @@ class Command(BaseCommand):
         parser.add_argument(
             '--force',
             action='store_true',
-            help='强制覆盖已有的引擎配置',
+            help='强制覆盖已有的引擎配置（包括 full scan 和子引擎）',
+        )
+        parser.add_argument(
+            '--force-sub',
+            action='store_true',
+            help='只覆盖子引擎配置，保留 full scan（升级时使用）',
         )
 
     def handle(self, *args, **options):
         force = options.get('force', False)
+        force_sub = options.get('force_sub', False)
+        
         # 读取默认配置文件
         config_path = Path(__file__).resolve().parent.parent.parent.parent / 'scan' / 'configs' / 'engine_config_example.yaml'
         
@@ -99,15 +108,22 @@ class Command(BaseCommand):
             engine_name = f"{scan_type}"
             sub_engine = ScanEngine.objects.filter(name=engine_name).first()
             if sub_engine:
-                if force:
+                # force 或 force_sub 都会覆盖子引擎
+                if force or force_sub:
                     sub_engine.configuration = single_yaml
                     sub_engine.save()
-                    self.stdout.write(self.style.SUCCESS(f'  ✓ 子引擎 {engine_name} 配置已更新 (ID: {sub_engine.id})'))
+                    self.stdout.write(self.style.SUCCESS(
+                        f'  ✓ 子引擎 {engine_name} 配置已更新 (ID: {sub_engine.id})'
+                    ))
                 else:
-                    self.stdout.write(self.style.WARNING(f'  ⊘ {engine_name} 已存在，跳过（使用 --force 覆盖）'))
+                    self.stdout.write(self.style.WARNING(
+                        f'  ⊘ {engine_name} 已存在，跳过（使用 --force 覆盖）'
+                    ))
             else:
                 sub_engine = ScanEngine.objects.create(
                     name=engine_name,
                     configuration=single_yaml,
                 )
-                self.stdout.write(self.style.SUCCESS(f'  ✓ 子引擎 {engine_name} 已创建 (ID: {sub_engine.id})'))
+                self.stdout.write(self.style.SUCCESS(
+                    f'  ✓ 子引擎 {engine_name} 已创建 (ID: {sub_engine.id})'
+                ))

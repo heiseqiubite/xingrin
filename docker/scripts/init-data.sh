@@ -83,20 +83,20 @@ if not yaml_path.exists():
     print('未找到配置文件，跳过')
     exit(0)
 
+new_config = yaml_path.read_text()
+
 # 检查是否已有 full scan 引擎
 engine = ScanEngine.objects.filter(name='full scan').first()
 if engine:
-    if not engine.configuration or not engine.configuration.strip():
-        engine.configuration = yaml_path.read_text()
-        engine.save(update_fields=['configuration'])
-        print(f'已初始化引擎配置: {engine.name}')
-    else:
-        print(f'引擎已有配置，跳过')
+    # 直接覆盖为最新配置
+    engine.configuration = new_config
+    engine.save(update_fields=['configuration'])
+    print(f'已更新引擎配置: {engine.name}')
 else:
     # 创建引擎
     engine = ScanEngine.objects.create(
         name='full scan',
-        configuration=yaml_path.read_text(),
+        configuration=new_config,
     )
     print(f'已创建引擎: {engine.name}')
 "
