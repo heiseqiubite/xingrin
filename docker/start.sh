@@ -191,8 +191,3 @@ else
     echo "      cd frontend && pnpm dev"
 fi
 echo ""
-echo -e "${BOLD}默认账号${NC}"
-echo "  用户名:   admin"
-echo "  密码:     admin"
-echo -e "  ${YELLOW}[!] 请首次登录后修改密码${NC}"
-echo ""
