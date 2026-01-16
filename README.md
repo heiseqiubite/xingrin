@@ -24,7 +24,7 @@
 </p>
 
 ---
-
+## 目前正在重构为go版本，性能会大幅上升，区别于其他扫描器的架构，预计完成时间2月10号前发布
 ## 在线 Demo
 
  **[https://xingrin.vercel.app/](https://xingrin.vercel.app/)**
