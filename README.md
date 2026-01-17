@@ -24,7 +24,6 @@
 </p>
 
 ---
-> 目前正在重构为go版本分布式架构，区别于其他扫描器，预计完成时间2月10号前发布
 ## 在线 Demo
 
  **[https://xingrin.vercel.app/](https://xingrin.vercel.app/)**
