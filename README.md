@@ -5,6 +5,15 @@
 </p>
 
 <p align="center">
+  <b>重构进行中</b>：目前正在使用 Go 语言重写后端，重命名为月狐，全新的前端 UI 与后端架构设计，目前进度5/10，可进入群优先体验内部测试，以下是暂定的ui
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/yuehu1.png" alt="仪表盘" width="48%">
+  <img src="docs/screenshots/yuehu2.png" alt="扫描历史" width="48%">
+</p>
+
+<p align="center">
   <a href="https://github.com/yyhuni/xingrin/stargazers"><img src="https://img.shields.io/github/stars/yyhuni/xingrin?style=flat-square&logo=github" alt="GitHub stars"></a>
   <a href="https://github.com/yyhuni/xingrin/network/members"><img src="https://img.shields.io/github/forks/yyhuni/xingrin?style=flat-square&logo=github" alt="GitHub forks"></a>
   <a href="https://github.com/yyhuni/xingrin/issues"><img src="https://img.shields.io/github/issues/yyhuni/xingrin?style=flat-square&logo=github" alt="GitHub issues"></a>
