@@ -4,7 +4,7 @@
 
 ### 架构设计
 - [版本管理架构](./version-management.md) - Git Tag 驱动的自动化版本管理系统
-- [Nuclei 模板架构](./nuclei-template-architecture.md) - 模板仓库的存储、同步、分发机制
+- [安全检测模板架构](./nuclei-template-architecture.md) - 检测模板仓库的存储、同步、分发机制
 - [字典文件架构](./wordlist-architecture.md) - 字典文件的存储、同步、分发机制
 
 ### 开发指南

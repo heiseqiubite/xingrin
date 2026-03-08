@@ -86,13 +86,13 @@ flowchart TB
     HTTPX2 --> SCREENSHOT
     FFUF --> SCREENSHOT
     
-    subgraph STAGE4["Stage 4: Vulnerability Sequential"]
+    subgraph STAGE4["Stage 4: Security Checks"]
         direction TB
         
-        subgraph VULN["Vulnerability Scan"]
+        subgraph VULN["Security Checks"]
             direction LR
-            DALFOX[dalfox<br/>XSS Scan]
-            NUCLEI[nuclei<br/>Vulnerability Scan]
+            DALFOX[dalfox<br/>XSS Check]
+            NUCLEI[nuclei<br/>Security Check]
         end
     end
     
@@ -119,7 +119,7 @@ flowchart TB
 # Stage 1: 资产发现 - 子域名 → 端口 → 站点探测 → 指纹识别
 # Stage 2: URL 收集 - URL 获取 + 目录扫描（并行）
 # Stage 3: 截图 - 在 URL 收集完成后执行，捕获更多发现的页面
-# Stage 4: 漏洞扫描 - 最后执行
+# Stage 4: 安全检测 - 最后执行
 EXECUTION_STAGES = [
     {'mode': 'sequential', 'flows': ['subdomain_discovery', 'port_scan', 'site_scan', 'fingerprint_detect']},
     {'mode': 'parallel', 'flows': ['url_fetch', 'directory_scan']},
@@ -139,4 +139,4 @@ EXECUTION_STAGES = [
 | url_fetch | waymore, katana, uro, httpx | Endpoint |
 | directory_scan | ffuf | Directory |
 | screenshot | Playwright | Screenshot |
-| vuln_scan | dalfox, nuclei | Vulnerability |
+| vuln_scan | dalfox, nuclei | SecurityFinding |

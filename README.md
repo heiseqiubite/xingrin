@@ -29,7 +29,7 @@
 </p>
 
 <p align="center">
-  <sub>关键词: Open Source | ASM | 攻击面管理 | 授权安全测试 | 防御研究 | 资产发现 | 资产搜索 | 安全自动化 | Nuclei | 子域名枚举 | EASM</sub>
+  <sub>关键词: Open Source | ASM | 攻击面管理 | 授权安全测试 | 防御研究 | 资产发现 | 资产搜索 | 安全自动化 | 风险检测 | 子域名枚举 | EASM</sub>
 </p>
 
 ---
@@ -59,7 +59,7 @@
 - [技术文档](./docs/README.md) - 技术文档导航（持续完善中）
 - [快速开始](./docs/quick-start.md) - 一键安装和部署指南
 - [版本管理](./docs/version-management.md) - Git Tag 驱动的自动化版本管理系统
-- [Nuclei 模板架构](./docs/nuclei-template-architecture.md) - 模板仓库的存储与同步
+- [安全检测模板架构](./docs/nuclei-template-architecture.md) - 检测模板仓库的存储与同步
 - [字典文件架构](./docs/wordlist-architecture.md) - 字典文件的存储与同步
 - [扫描流程架构](./docs/scan-flow-architecture.md) - 完整扫描流程与工具编排
 - [贡献指南](./CONTRIBUTING.md) - Issue、Pull Request 与贡献约定
@@ -75,13 +75,13 @@
 
 | 功能 | 状态 | 工具 | 说明 |
 |------|------|------|------|
-| 子域名扫描 | 已完成 | Subfinder, Amass, PureDNS | 被动收集 + 主动爆破，聚合 50+ 数据源 |
+| 子域名扫描 | 已完成 | Subfinder, Amass, PureDNS | 被动收集 + 主动枚举，聚合 50+ 数据源 |
 | 端口扫描 | 已完成 | Naabu | 自定义端口范围 |
 | 站点发现 | 已完成 | HTTPX | HTTP 探测，自动获取标题、状态码、技术栈 |
 | 指纹识别 | 已完成 | XingFinger | 2.7W+ 指纹规则，多源指纹库 |
 | URL 收集 | 已完成 | Waymore, Katana | 历史数据 + 主动爬取 |
-| 目录扫描 | 已完成 | FFUF | 高速爆破，智能字典 |
-| 漏洞扫描 | 已完成 | Nuclei, Dalfox | 9000+ POC 模板，XSS 检测 |
+| 目录扫描 | 已完成 | FFUF | 高效探测，智能字典 |
+| 安全检测 | 已完成 | Nuclei, Dalfox | 9000+ 检测模板，覆盖常见 Web 风险与配置问题 |
 | 站点截图 | 已完成 | Playwright | WebP 高压缩存储 |
 
 ### 平台能力
@@ -99,7 +99,7 @@
 
 ### 扫描流程架构
 
-完整的扫描流程包括：子域名发现、端口扫描、站点发现、指纹识别、URL 收集、目录扫描、漏洞扫描等阶段
+完整的扫描流程包括：子域名发现、端口扫描、站点发现、指纹识别、URL 收集、目录扫描、安全检测等阶段
 
 ```mermaid
 flowchart LR
@@ -121,8 +121,8 @@ flowchart LR
         SCREENSHOT["站点截图<br/>playwright"]
     end
     
-    subgraph STAGE3["阶段 3: 漏洞检测"]
-        VULN["漏洞扫描<br/>nuclei, dalfox"]
+    subgraph STAGE3["阶段 3: 安全检测"]
+        VULN["安全检测<br/>nuclei, dalfox"]
     end
     
     FINISH["扫描完成"]
